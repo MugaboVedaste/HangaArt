@@ -9,6 +9,8 @@ from .views import (
     BuyerProfileView,
     PublicArtistProfileView,
     ArtistListView,
+    ArtistVerificationView,
+    BuyerListView,
 )
 
 urlpatterns = [
@@ -26,4 +28,10 @@ urlpatterns = [
     
     # Public artist listing
     path('artists/', ArtistListView.as_view(), name='artist_list'),
+    
+    # Admin: Artist verification
+    path('artists/<int:profile_id>/verify/', ArtistVerificationView.as_view(), name='artist_verify'),
+    
+    # Admin: Buyer listing
+    path('buyers/', BuyerListView.as_view(), name='buyer_list'),
 ]

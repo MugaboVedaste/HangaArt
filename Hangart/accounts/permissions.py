@@ -35,7 +35,7 @@ class IsAdmin(permissions.BasePermission):
     Permission to only allow admins to access.
     """
     def has_permission(self, request, view):
-        return request.user and request.user.is_authenticated and request.user.role == 'admin'
+        return request.user and request.user.is_authenticated and (request.user.role == 'admin' or request.user.is_staff)
 
 
 class IsOwner(permissions.BasePermission):

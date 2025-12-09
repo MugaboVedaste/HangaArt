@@ -73,14 +73,20 @@ from django.db.models.signals import post_save
 from django.dispatch import receiver
 
 @receiver(post_save, sender=User)
-def create_admin_profile(sender, instance, created, **kwargs):
-    if created and instance.role == 'admin':
-        AdminProfile.objects.get_or_create(
-            user=instance,
-            defaults={
-                'employee_id': f'EMP{instance.id:04d}',
-                'position': 'Admin'
-            }
-        )
+def create_user_profile(sender, instance, created, **kwargs):
+    """Auto-create profiles for users based on their role"""
+    if created:
+        if instance.role == 'admin':
+            AdminProfile.objects.get_or_create(
+                user=instance,
+                defaults={
+                    'employee_id': f'EMP{instance.id:04d}',
+                    'position': 'Admin'
+                }
+            )
+        elif instance.role == 'artist':
+            ArtistProfile.objects.get_or_create(user=instance)
+        elif instance.role == 'buyer':
+            BuyerProfile.objects.get_or_create(user=instance)
 
 

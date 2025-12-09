@@ -21,6 +21,19 @@ class ArtistProfileAdmin(admin.ModelAdmin):
     list_filter = ['verified_by_admin', 'country']
     search_fields = ['user__username', 'user__email', 'specialization']
     readonly_fields = ['user']
+    actions = ['verify_artists', 'unverify_artists']
+    
+    def verify_artists(self, request, queryset):
+        """Bulk action to verify selected artists"""
+        updated = queryset.update(verified_by_admin=True)
+        self.message_user(request, f'{updated} artist(s) verified successfully.')
+    verify_artists.short_description = 'Verify selected artists'
+    
+    def unverify_artists(self, request, queryset):
+        """Bulk action to unverify selected artists"""
+        updated = queryset.update(verified_by_admin=False)
+        self.message_user(request, f'{updated} artist(s) unverified.')
+    unverify_artists.short_description = 'Unverify selected artists'
 
 
 @admin.register(BuyerProfile)

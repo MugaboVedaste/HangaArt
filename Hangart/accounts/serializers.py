@@ -6,10 +6,13 @@ User = get_user_model()
 
 
 class ArtistProfileSerializer(serializers.ModelSerializer):
+    username = serializers.CharField(source='user.username', read_only=True)
+    user_id = serializers.IntegerField(source='user.id', read_only=True)
+    
     class Meta:
         model = ArtistProfile
         fields = [
-            'id', 'bio', 'profile_photo', 'website', 'specialization',
+            'id', 'user_id', 'username', 'bio', 'profile_photo', 'website', 'specialization',
             'experience_years', 'phone', 'email', 'country', 'city',
             'verified_by_admin', 'instagram', 'facebook', 'twitter_x',
             'youtube', 'tiktok', 'linkedin'
@@ -18,11 +21,15 @@ class ArtistProfileSerializer(serializers.ModelSerializer):
 
 
 class BuyerProfileSerializer(serializers.ModelSerializer):
+    username = serializers.CharField(source='user.username', read_only=True)
+    user_id = serializers.IntegerField(source='user.id', read_only=True)
+    email = serializers.EmailField(source='user.email', read_only=True)
+    
     class Meta:
         model = BuyerProfile
         fields = [
-            'id', 'profile_photo', 'phone', 'email', 'address',
-            'city', 'country', 'date_of_birth'
+            'id', 'user_id', 'username', 'email', 'profile_photo', 'phone',
+            'address', 'city', 'country', 'date_of_birth'
         ]
 
 
@@ -78,6 +85,13 @@ class UserRegistrationSerializer(serializers.ModelSerializer):
             BuyerProfile.objects.create(user=user)
         
         return user
+
+
+class ArtistVerificationSerializer(serializers.ModelSerializer):
+    """Admin-only serializer for verifying artists"""
+    class Meta:
+        model = ArtistProfile
+        fields = ['verified_by_admin']
 
 
 class PasswordChangeSerializer(serializers.Serializer):
