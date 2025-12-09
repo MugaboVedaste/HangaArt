@@ -1,0 +1,259 @@
+.hangart-doc-wrapper {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif !important;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%) !important;
+    color: #222 !important;
+    line-height: 1.7 !important;
+    padding: 20px !important;
+    margin: 0 !important;
+}
+
+.hangart-doc-wrapper * {
+    box-sizing: border-box !important;
+}
+
+.hangart-doc-wrapper .hangart-header {
+    background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%) !important;
+    color: white !important;
+    padding: 3rem 2rem !important;
+    text-align: center !important;
+    border-radius: 12px !important;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.3) !important;
+    margin-bottom: 2rem !important;
+}
+
+.hangart-doc-wrapper .hangart-header h1 {
+    font-size: 2.8rem !important;
+    margin-bottom: 0.5rem !important;
+    text-shadow: 2px 2px 4px rgba(0,0,0,0.3) !important;
+    color: white !important;
+}
+
+.hangart-doc-wrapper .hangart-header p {
+    font-size: 1.2rem !important;
+    opacity: 0.9 !important;
+    color: white !important;
+}
+
+.hangart-doc-wrapper .hangart-container {
+    max-width: 1200px !important;
+    margin: auto !important;
+    background: white !important;
+    padding: 3rem !important;
+    border-radius: 12px !important;
+    box-shadow: 0 15px 40px rgba(0,0,0,0.2) !important;
+}
+
+.hangart-doc-wrapper .hangart-section {
+    margin-bottom: 3rem !important;
+}
+
+.hangart-doc-wrapper .hangart-h2 {
+    margin-top: 2.5rem !important;
+    margin-bottom: 1rem !important;
+    color: #16213e !important;
+    font-size: 1.8rem !important;
+    border-bottom: 3px solid #667eea !important;
+    padding-bottom: 0.5rem !important;
+}
+
+.hangart-doc-wrapper .hangart-h3 {
+    margin-top: 1.5rem !important;
+    margin-bottom: 0.8rem !important;
+    color: #764ba2 !important;
+    font-size: 1.3rem !important;
+}
+
+.hangart-doc-wrapper .hangart-h4 {
+    margin-top: 1.2rem !important;
+    margin-bottom: 0.5rem !important;
+    color: #4c1d95 !important;
+    font-size: 1.1rem !important;
+}
+
+.hangart-doc-wrapper .hangart-pre {
+    background: #1e293b !important;
+    color: #f8fafc !important;
+    padding: 1.2rem !important;
+    border-radius: 8px !important;
+    overflow-x: auto !important;
+    margin: 1rem 0 !important;
+    border-left: 4px solid #667eea !important;
+    font-family: 'Courier New', monospace !important;
+}
+
+.hangart-doc-wrapper .hangart-code {
+    background: #f1f5f9 !important;
+    padding: 2px 6px !important;
+    border-radius: 4px !important;
+    color: #e11d48 !important;
+    font-family: 'Courier New', monospace !important;
+}
+
+.hangart-doc-wrapper .hangart-pre .hangart-code {
+    background: transparent !important;
+    padding: 0 !important;
+    color: #f8fafc !important;
+}
+
+.hangart-doc-wrapper .hangart-table {
+    width: 100% !important;
+    border-collapse: collapse !important;
+    margin: 1.5rem 0 !important;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.1) !important;
+    border-radius: 8px !important;
+    overflow: hidden !important;
+}
+
+.hangart-doc-wrapper .hangart-table th, 
+.hangart-doc-wrapper .hangart-table td {
+    padding: 1rem !important;
+    text-align: left !important;
+    border-bottom: 1px solid #e5e7eb !important;
+}
+
+.hangart-doc-wrapper .hangart-table th {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%) !important;
+    color: white !important;
+    font-weight: 600 !important;
+}
+
+.hangart-doc-wrapper .hangart-table tr:hover {
+    background: #f9fafb !important;
+}
+
+.hangart-doc-wrapper .hangart-ul, 
+.hangart-doc-wrapper .hangart-ol {
+    margin-left: 2rem !important;
+    margin-bottom: 1rem !important;
+}
+
+.hangart-doc-wrapper .hangart-li {
+    margin: 0.5rem 0 !important;
+}
+
+.hangart-doc-wrapper .hangart-badge {
+    display: inline-block !important;
+    padding: 4px 10px !important;
+    border-radius: 12px !important;
+    font-size: 0.85rem !important;
+    font-weight: 600 !important;
+    margin-right: 8px !important;
+}
+
+.hangart-doc-wrapper .hangart-badge-method {
+    background: #10b981 !important;
+    color: white !important;
+}
+
+.hangart-doc-wrapper .hangart-badge-post {
+    background: #3b82f6 !important;
+    color: white !important;
+}
+
+.hangart-doc-wrapper .hangart-badge-put {
+    background: #f59e0b !important;
+    color: white !important;
+}
+
+.hangart-doc-wrapper .hangart-badge-delete {
+    background: #ef4444 !important;
+    color: white !important;
+}
+
+.hangart-doc-wrapper .hangart-badge-patch {
+    background: #8b5cf6 !important;
+    color: white !important;
+}
+
+.hangart-doc-wrapper .hangart-info-box {
+    background: #eff6ff !important;
+    border-left: 4px solid #3b82f6 !important;
+    padding: 1rem !important;
+    margin: 1rem 0 !important;
+    border-radius: 4px !important;
+}
+
+.hangart-doc-wrapper .hangart-warning-box {
+    background: #fef3c7 !important;
+    border-left: 4px solid #f59e0b !important;
+    padding: 1rem !important;
+    margin: 1rem 0 !important;
+    border-radius: 4px !important;
+}
+
+.hangart-doc-wrapper .hangart-api-url {
+    background: #16213e !important;
+    color: #67e8f9 !important;
+    padding: 8px 12px !important;
+    border-radius: 6px !important;
+    display: inline-block !important;
+    margin: 1rem 0 !important;
+    font-family: monospace !important;
+}
+
+.hangart-doc-wrapper .hangart-footer {
+    text-align: center !important;
+    padding: 2rem !important;
+    margin-top: 3rem !important;
+    background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%) !important;
+    color: white !important;
+    border-radius: 12px !important;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.3) !important;
+}
+
+.hangart-doc-wrapper .hangart-endpoint {
+    background: #f8fafc !important;
+    border-radius: 8px !important;
+    padding: 1.5rem !important;
+    margin: 1.5rem 0 !important;
+    border-left: 4px solid #667eea !important;
+}
+
+.hangart-doc-wrapper .hangart-endpoint-header {
+    display: flex !important;
+    align-items: center !important;
+    margin-bottom: 1rem !important;
+}
+
+.hangart-doc-wrapper .hangart-endpoint-method {
+    font-weight: bold !important;
+    padding: 4px 12px !important;
+    border-radius: 4px !important;
+    margin-right: 10px !important;
+}
+
+.hangart-doc-wrapper .hangart-endpoint-path {
+    font-family: monospace !important;
+    font-size: 1.1rem !important;
+}
+
+.hangart-doc-wrapper .hangart-status-code {
+    display: inline-block !important;
+    padding: 2px 8px !important;
+    border-radius: 4px !important;
+    margin-right: 5px !important;
+    font-size: 0.8rem !important;
+    font-weight: bold !important;
+}
+
+.hangart-doc-wrapper .hangart-status-200 { background: #10b981 !important; color: white !important; }
+.hangart-doc-wrapper .hangart-status-201 { background: #10b981 !important; color: white !important; }
+.hangart-doc-wrapper .hangart-status-204 { background: #10b981 !important; color: white !important; }
+.hangart-doc-wrapper .hangart-status-400 { background: #f59e0b !important; color: white !important; }
+.hangart-doc-wrapper .hangart-status-401 { background: #ef4444 !important; color: white !important; }
+.hangart-doc-wrapper .hangart-status-403 { background: #ef4444 !important; color: white !important; }
+.hangart-doc-wrapper .hangart-status-404 { background: #ef4444 !important; color: white !important; }
+
+@media (max-width: 768px) {
+    .hangart-doc-wrapper .hangart-header h1 {
+        font-size: 2rem !important;
+    }
+
+    .hangart-doc-wrapper .hangart-container {
+        padding: 1.5rem !important;
+    }
+
+    .hangart-doc-wrapper .hangart-table {
+        font-size: 0.9rem !important;
+    }
+}

@@ -35,4 +35,13 @@ class BuyerProfileAdmin(admin.ModelAdmin):
 class AdminProfileAdmin(admin.ModelAdmin):
     list_display = ['user', 'employee_id', 'position']
     search_fields = ['user__username', 'employee_id']
-    readonly_fields = ['user']
+
+    def formfield_for_foreignkey(self, db_field, request, **kwargs):
+        if db_field.name == 'user':
+            # Show only users with role='admin' who don't yet have an AdminProfile
+            kwargs['queryset'] = User.objects.filter(
+                role='admin'
+            ).exclude(
+                admin_profile__isnull=False
+            )
+        return super().formfield_for_foreignkey(db_field, request, **kwargs)

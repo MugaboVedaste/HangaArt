@@ -18,10 +18,15 @@ from django.contrib import admin
 from django.urls import path, include
 from django.conf import settings
 from django.conf.urls.static import static
+from django.shortcuts import render
+
+def landing(request):
+    return render(request, "index.html")
 
 urlpatterns = [
+    path('', landing, name="landing"),
     path('admin/', admin.site.urls),
-    
+
     # API endpoints
     path('api/', include('accounts.urls')),
     path('api/', include('artworks.urls')),

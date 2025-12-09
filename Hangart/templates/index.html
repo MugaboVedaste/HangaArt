@@ -1,0 +1,1812 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>HangArt API - Online Art Gallery Backend</title>
+
+    <style>
+        /* HangArt API Documentation Styles - Fully isolated from Django admin */
+        
+        /* Reset only within our container */
+        .hangart-api-doc,
+        .hangart-api-doc * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        /* All styles scoped to .hangart-api-doc */
+        .hangart-api-doc {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: #222;
+            line-height: 1.7;
+            padding: 20px;
+            min-height: 100vh;
+        }
+
+        /* Header styles */
+        .hangart-api-doc > header {
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+            color: white;
+            padding: 3rem 2rem;
+            text-align: center;
+            border-radius: 12px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+            margin-bottom: 2rem;
+        }
+
+        .hangart-api-doc > header h1 {
+            font-size: 2.8rem;
+            margin-bottom: 0.5rem;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+        }
+
+        .hangart-api-doc > header p {
+            font-size: 1.2rem;
+            opacity: 0.9;
+        }
+
+        /* Container */
+        .hangart-api-doc .container {
+            max-width: 1200px;
+            margin: auto;
+            background: white;
+            padding: 3rem;
+            border-radius: 12px;
+            box-shadow: 0 15px 40px rgba(0,0,0,0.2);
+        }
+
+        /* Headings */
+        .hangart-api-doc .container h2 {
+            margin-top: 2.5rem;
+            margin-bottom: 1rem;
+            color: #16213e;
+            font-size: 1.8rem;
+            border-bottom: 3px solid #667eea;
+            padding-bottom: 0.5rem;
+        }
+
+        .hangart-api-doc .container h3 {
+            margin-top: 1.5rem;
+            margin-bottom: 0.8rem;
+            color: #764ba2;
+            font-size: 1.3rem;
+        }
+
+        .hangart-api-doc .container h4 {
+            margin-top: 1.2rem;
+            margin-bottom: 0.5rem;
+            color: #4c1d95;
+            font-size: 1.1rem;
+        }
+
+        /* Code blocks */
+        .hangart-api-doc pre {
+            background: #1e293b;
+            color: #f8fafc;
+            padding: 1.2rem;
+            border-radius: 8px;
+            overflow-x: auto;
+            margin: 1rem 0;
+            border-left: 4px solid #667eea;
+        }
+
+        .hangart-api-doc code {
+            background: #f1f5f9;
+            padding: 2px 6px;
+            border-radius: 4px;
+            color: #e11d48;
+            font-family: 'Courier New', monospace;
+            font-size: 0.9em;
+        }
+
+        .hangart-api-doc pre code {
+            background: transparent;
+            padding: 0;
+            color: #f8fafc;
+        }
+
+        /* Tables */
+        .hangart-api-doc table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 1.5rem 0;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            border-radius: 8px;
+            overflow: hidden;
+        }
+
+        .hangart-api-doc table th, 
+        .hangart-api-doc table td {
+            padding: 1rem;
+            text-align: left;
+            border-bottom: 1px solid #e5e7eb;
+        }
+
+        .hangart-api-doc table th {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            font-weight: 600;
+        }
+
+        .hangart-api-doc table tbody tr:hover {
+            background: #f9fafb;
+        }
+
+        /* Lists */
+        .hangart-api-doc ul, 
+        .hangart-api-doc ol {
+            margin-left: 2rem;
+            margin-bottom: 1rem;
+        }
+
+        .hangart-api-doc li {
+            margin: 0.5rem 0;
+        }
+
+        /* Badges */
+        .hangart-api-doc .badge {
+            display: inline-block;
+            padding: 4px 10px;
+            border-radius: 12px;
+            font-size: 0.85rem;
+            font-weight: 600;
+            margin-right: 8px;
+        }
+
+        .hangart-api-doc .badge-method {
+            background: #10b981;
+            color: white;
+        }
+
+        .hangart-api-doc .badge-post {
+            background: #3b82f6;
+            color: white;
+        }
+
+        .hangart-api-doc .badge-put {
+            background: #f59e0b;
+            color: white;
+        }
+
+        .hangart-api-doc .badge-delete {
+            background: #ef4444;
+            color: white;
+        }
+
+        .hangart-api-doc .badge-patch {
+            background: #8b5cf6;
+            color: white;
+        }
+
+        /* Info and warning boxes */
+        .hangart-api-doc .info-box {
+            background: #eff6ff;
+            border-left: 4px solid #3b82f6;
+            padding: 1rem;
+            margin: 1rem 0;
+            border-radius: 4px;
+        }
+
+        .hangart-api-doc .warning-box {
+            background: #fef3c7;
+            border-left: 4px solid #f59e0b;
+            padding: 1rem;
+            margin: 1rem 0;
+            border-radius: 4px;
+        }
+
+        /* API URL display */
+        .hangart-api-doc .api-url {
+            background: #16213e;
+            color: #67e8f9;
+            padding: 8px 12px;
+            border-radius: 6px;
+            display: inline-block;
+            margin: 1rem 0;
+            font-family: monospace;
+        }
+
+        /* Footer */
+        .hangart-api-doc > footer {
+            text-align: center;
+            padding: 2rem;
+            margin-top: 3rem;
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+            color: white;
+            border-radius: 12px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+        }
+
+        /* Sections */
+        .hangart-api-doc .section {
+            margin-bottom: 3rem;
+        }
+
+        /* Endpoints */
+        .hangart-api-doc .endpoint {
+            background: #f8fafc;
+            border-radius: 8px;
+            padding: 1.5rem;
+            margin: 1.5rem 0;
+            border-left: 4px solid #667eea;
+        }
+
+        .hangart-api-doc .endpoint-header {
+            display: flex;
+            align-items: center;
+            margin-bottom: 1rem;
+            flex-wrap: wrap;
+        }
+
+        .hangart-api-doc .endpoint-method {
+            font-weight: bold;
+            padding: 4px 12px;
+            border-radius: 4px;
+            margin-right: 10px;
+        }
+
+        .hangart-api-doc .endpoint-path {
+            font-family: monospace;
+            font-size: 1.1rem;
+        }
+
+        /* Status codes */
+        .hangart-api-doc .status-code {
+            display: inline-block;
+            padding: 2px 8px;
+            border-radius: 4px;
+            margin-right: 5px;
+            font-size: 0.8rem;
+            font-weight: bold;
+        }
+
+        .hangart-api-doc .status-200 { background: #10b981; color: white; }
+        .hangart-api-doc .status-201 { background: #10b981; color: white; }
+        .hangart-api-doc .status-204 { background: #10b981; color: white; }
+        .hangart-api-doc .status-400 { background: #f59e0b; color: white; }
+        .hangart-api-doc .status-401 { background: #ef4444; color: white; }
+        .hangart-api-doc .status-403 { background: #ef4444; color: white; }
+        .hangart-api-doc .status-404 { background: #ef4444; color: white; }
+        .hangart-api-doc .status-500 { background: #ef4444; color: white; }
+
+        /* Responsive design */
+        @media (max-width: 768px) {
+            .hangart-api-doc > header h1 {
+                font-size: 2rem;
+            }
+
+            .hangart-api-doc .container {
+                padding: 1.5rem;
+            }
+
+            .hangart-api-doc table {
+                font-size: 0.9rem;
+            }
+
+            .hangart-api-doc .endpoint-header {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+
+            .hangart-api-doc .endpoint-method {
+                margin-bottom: 0.5rem;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <!-- HangArt API Documentation Container -->
+    <div class="hangart-api-doc">
+        <header>
+            <h1>🎨 HangArt API</h1>
+            <p>Django REST Framework backend powering the online art gallery marketplace</p>
+            <div class="api-url">https://hangart.pythonanywhere.com/api/</div>
+        </header>
+
+        <div class="container">
+
+            <div class="section">
+                <h2>🚀 Overview</h2>
+                <p>
+                    Django REST Framework API for an online art gallery connecting artists with buyers.
+                    This backend powers the HangaArt marketplace, providing secure authentication,
+                    artwork management, order processing, and payment integration.
+                </p>
+            </div>
+
+            <div class="section">
+                <h2>✨ Features</h2>
+                <ul>
+                    <li>🎨 <strong>Artist Management</strong> - Artists can create, submit, and manage their artwork portfolios</li>
+                    <li>🛒 <strong>Order Processing</strong> - Buyers can purchase artworks with order tracking</li>
+                    <li>💳 <strong>Payment Integration</strong> - Multiple payment methods with webhook support</li>
+                    <li>🔐 <strong>JWT Authentication</strong> - Secure token-based authentication</li>
+                    <li>👥 <strong>Role-Based Access</strong> - Artist, Buyer, and Admin roles with specific permissions</li>
+                    <li>✅ <strong>Admin Approval Workflow</strong> - Artworks require admin approval before marketplace listing</li>
+                </ul>
+            </div>
+
+            <div class="section">
+                <h2>🧰 Technology Stack</h2>
+                <ul>
+                    <li>Django 5.2.4</li>
+                    <li>Django REST Framework 3.14+</li>
+                    <li>Simple JWT for authentication</li>
+                    <li>SQLite (development) / PostgreSQL (production recommended)</li>
+                    <li>django-cors-headers for React frontend integration</li>
+                </ul>
+            </div>
+
+            <div class="section">
+                <h2>📦 Installation</h2>
+
+                <h3>1. Clone the repository</h3>
+                <pre>cd HangaArt/Hangart</pre>
+
+                <h3>2. Install dependencies</h3>
+                <pre>pip install -r requirements.txt</pre>
+
+                <h3>3. Run migrations</h3>
+                <pre>python manage.py makemigrations
+python manage.py migrate</pre>
+
+                <h3>4. Create superuser (admin)</h3>
+                <pre>python manage.py createsuperuser</pre>
+
+                <h3>5. Run development server</h3>
+                <pre>python manage.py runserver</pre>
+
+                <div class="info-box">
+                    <strong>API Base URL:</strong> <code>https://hangart.pythonanywhere.com/api/</code>
+                </div>
+            </div>
+
+            <!-- AUTHENTICATION ENDPOINTS -->
+            <div class="section">
+                <h2>🔐 Authentication Endpoints</h2>
+                <p>All protected endpoints require JWT authentication. Include the token in request headers:</p>
+                <pre>Authorization: Bearer &lt;access_token&gt;</pre>
+
+                <!-- Register User -->
+                <div class="endpoint">
+                    <div class="endpoint-header">
+                        <span class="endpoint-method badge-post">POST</span>
+                        <span class="endpoint-path">/api/auth/register/</span>
+                    </div>
+                    <p><strong>Authentication:</strong> Not required</p>
+                    <p><strong>Description:</strong> Register a new user as either an artist or buyer</p>
+                    
+                    <h4>Request Body:</h4>
+                    <pre><code>{
+  "username": "string (required, unique)",
+  "email": "string (required, valid email)",
+  "password": "string (required, min 8 chars)",
+  "password2": "string (required, must match password)",
+  "role": "string (required, 'artist' or 'buyer')",
+  "first_name": "string (optional)",
+  "last_name": "string (optional)",
+  "phone": "string (optional)"
+}</code></pre>
+
+                    <h4>Success Response (201):</h4>
+                    <pre><code>{
+  "user": {
+    "id": 1,
+    "username": "artist1",
+    "email": "artist@example.com",
+    "first_name": "John",
+    "last_name": "Doe",
+    "role": "artist",
+    "phone": "+250789123456",
+    "is_verified": false,
+    "join_date": "2024-11-26T10:30:00Z",
+    "artist_profile": {
+      "id": 1,
+      "bio": null,
+      "verified_by_admin": false,
+      ...
+    },
+    "buyer_profile": null,
+    "admin_profile": null
+  },
+  "tokens": {
+    "refresh": "eyJ0eXAiOiJKV1QiLCJhbGc...",
+    "access": "eyJ0eXAiOiJKV1QiLCJhbGc..."
+  }
+}</code></pre>
+
+                    <h4>How It Works:</h4>
+                    <ol>
+                        <li>User submits registration form with role selection</li>
+                        <li>System validates all fields (password match, unique username/email)</li>
+                        <li>Creates User record with hashed password</li>
+                        <li>Automatically creates corresponding profile (ArtistProfile or BuyerProfile)</li>
+                        <li>Returns user data + JWT tokens for immediate login</li>
+                    </ol>
+                </div>
+
+                <!-- Login -->
+                <div class="endpoint">
+                    <div class="endpoint-header">
+                        <span class="endpoint-method badge-post">POST</span>
+                        <span class="endpoint-path">/api/auth/login/</span>
+                    </div>
+                    <p><strong>Authentication:</strong> Not required</p>
+                    <p><strong>Description:</strong> Login and receive JWT tokens</p>
+                    
+                    <h4>Request Body:</h4>
+                    <pre><code>{
+  "username": "string (required)",
+  "password": "string (required)"
+}</code></pre>
+
+                    <h4>Success Response (200):</h4>
+                    <pre><code>{
+  "refresh": "eyJ0eXAiOiJKV1QiLCJhbGc...",
+  "access": "eyJ0eXAiOiJKV1QiLCJhbGc..."
+}</code></pre>
+
+                    <h4>How It Works:</h4>
+                    <ol>
+                        <li>System validates credentials against database</li>
+                        <li>Generates JWT access token (valid for 1 hour)</li>
+                        <li>Generates JWT refresh token (valid for 7 days)</li>
+                        <li>Returns both tokens for frontend storage</li>
+                    </ol>
+                </div>
+
+                <!-- Refresh Token -->
+                <div class="endpoint">
+                    <div class="endpoint-header">
+                        <span class="endpoint-method badge-post">POST</span>
+                        <span class="endpoint-path">/api/auth/token/refresh/</span>
+                    </div>
+                    <p><strong>Authentication:</strong> Not required</p>
+                    <p><strong>Description:</strong> Get a new access token using refresh token</p>
+                    
+                    <h4>Request Body:</h4>
+                    <pre><code>{
+  "refresh": "string (required, valid refresh token)"
+}</code></pre>
+
+                    <h4>Success Response (200):</h4>
+                    <pre><code>{
+  "access": "eyJ0eXAiOiJKV1QiLCJhbGc..."
+}</code></pre>
+
+                    <h4>How It Works:</h4>
+                    <ol>
+                        <li>Frontend detects access token expiration (401 error)</li>
+                        <li>Sends refresh token to this endpoint</li>
+                        <li>System validates refresh token</li>
+                        <li>Issues new access token</li>
+                        <li>Frontend updates stored access token</li>
+                    </ol>
+                </div>
+
+                <!-- Get Current User -->
+                <div class="endpoint">
+                    <div class="endpoint-header">
+                        <span class="endpoint-method badge-method">GET</span>
+                        <span class="endpoint-path">/api/auth/me/</span>
+                    </div>
+                    <p><strong>Authentication:</strong> Required</p>
+                    <p><strong>Description:</strong> Get authenticated user's details</p>
+                    
+                    <h4>Success Response (200):</h4>
+                    <pre><code>{
+  "id": 1,
+  "username": "artist1",
+  "email": "artist@example.com",
+  "first_name": "John",
+  "last_name": "Doe",
+  "role": "artist",
+  "phone": "+250789123456",
+  "is_verified": false,
+  "join_date": "2024-11-26T10:30:00Z",
+  "artist_profile": {
+    "id": 1,
+    "bio": "Award-winning artist...",
+    "profile_photo": "/media/artists/profile.jpg",
+    "website": "https://artist.com",
+    "specialization": "Abstract Art",
+    "experience_years": 10,
+    "verified_by_admin": true,
+    "country": "Rwanda",
+    "city": "Kigali",
+    "instagram": "https://instagram.com/artist",
+    "facebook": "https://facebook.com/artist",
+    ...
+  },
+  "buyer_profile": null,
+  "admin_profile": null
+}</code></pre>
+
+                    <h4>How It Works:</h4>
+                    <ol>
+                        <li>Frontend sends request with access token in header</li>
+                        <li>JWT middleware validates token and extracts user ID</li>
+                        <li>System retrieves user with related profile</li>
+                        <li>Returns complete user + profile data</li>
+                    </ol>
+                </div>
+
+                <!-- Update Current User -->
+                <div class="endpoint">
+                    <div class="endpoint-header">
+                        <span class="endpoint-method badge-put">PUT/PATCH</span>
+                        <span class="endpoint-path">/api/auth/me/</span>
+                    </div>
+                    <p><strong>Authentication:</strong> Required</p>
+                    <p><strong>Description:</strong> Update authenticated user's basic information</p>
+                    
+                    <h4>Request Body (PATCH - partial update):</h4>
+                    <pre><code>{
+  "first_name": "string (optional)",
+  "last_name": "string (optional)",
+  "phone": "string (optional)",
+  "email": "string (optional)"
+}</code></pre>
+
+                    <h4>Success Response (200):</h4>
+                    <pre><code>{
+  "id": 1,
+  "username": "artist1",
+  "email": "updated@example.com",
+  "first_name": "Updated",
+  "last_name": "Name",
+  ...
+}</code></pre>
+
+                    <h4>How It Works:</h4>
+                    <ol>
+                        <li>User updates their information in frontend</li>
+                        <li>Frontend sends only changed fields (PATCH) or all fields (PUT)</li>
+                        <li>System validates and updates User model</li>
+                        <li>Returns updated user data</li>
+                    </ol>
+                </div>
+
+                <!-- Change Password -->
+                <div class="endpoint">
+                    <div class="endpoint-header">
+                        <span class="endpoint-method badge-post">POST</span>
+                        <span class="endpoint-path">/api/auth/change-password/</span>
+                    </div>
+                    <p><strong>Authentication:</strong> Required</p>
+                    <p><strong>Description:</strong> Change user's password</p>
+                    
+                    <h4>Request Body:</h4>
+                    <pre><code>{
+  "old_password": "string (required)",
+  "new_password": "string (required)",
+  "new_password2": "string (required, must match new_password)"
+}</code></pre>
+
+                    <h4>Success Response (200):</h4>
+                    <pre><code>{
+  "message": "Password changed successfully."
+}</code></pre>
+
+                    <h4>How It Works:</h4>
+                    <ol>
+                        <li>User enters old and new password in form</li>
+                        <li>System verifies old password is correct</li>
+                        <li>Validates new passwords match</li>
+                        <li>Hashes and saves new password</li>
+                        <li>User remains logged in (tokens still valid)</li>
+                    </ol>
+                </div>
+            </div>
+
+            <!-- PROFILE ENDPOINTS -->
+            <div class="section">
+                <h2>👤 Profile Endpoints</h2>
+
+                <!-- Get/Update Artist Profile -->
+                <div class="endpoint">
+                    <div class="endpoint-header">
+                        <span class="endpoint-method badge-method">GET/PUT/PATCH</span>
+                        <span class="endpoint-path">/api/profiles/artist/</span>
+                    </div>
+                    <p><strong>Authentication:</strong> Required (Artist role)</p>
+                    <p><strong>Description:</strong> Manage current user's artist profile</p>
+                    
+                    <h4>GET Response (200):</h4>
+                    <pre><code>{
+  "id": 1,
+  "bio": "Award-winning contemporary artist...",
+  "profile_photo": "/media/artists/profile.jpg",
+  "website": "https://artist.com",
+  "specialization": "Abstract Art",
+  "experience_years": 10,
+  "phone": "+250789123456",
+  "email": "artist@example.com",
+  "country": "Rwanda",
+  "city": "Kigali",
+  "verified_by_admin": true,
+  "instagram": "https://instagram.com/artist",
+  "facebook": "https://facebook.com/artist",
+  "twitter_x": "https://twitter.com/artist",
+  "youtube": "https://youtube.com/@artist",
+  "tiktok": "https://tiktok.com/@artist",
+  "linkedin": "https://linkedin.com/in/artist"
+}</code></pre>
+
+                    <h4>PATCH Request Body:</h4>
+                    <pre><code>{
+  "bio": "string (optional)",
+  "profile_photo": "file upload (optional)",
+  "website": "url (optional)",
+  "specialization": "string (optional)",
+  "experience_years": "integer (optional)",
+  "country": "string (optional)",
+  "city": "string (optional)",
+  "instagram": "url (optional)",
+  "facebook": "url (optional)",
+  ...
+}</code></pre>
+
+                    <h4>How It Works:</h4>
+                    <ol>
+                        <li>Artist accesses their profile page</li>
+                        <li>GET request retrieves current profile data</li>
+                        <li>Artist updates fields (bio, portfolio, social links)</li>
+                        <li>PATCH request updates only changed fields</li>
+                        <li>Profile photo uploaded as multipart/form-data</li>
+                        <li>Admin can verify artist by setting <code>verified_by_admin = true</code></li>
+                    </ol>
+                </div>
+
+                <!-- Get/Update Buyer Profile -->
+                <div class="endpoint">
+                    <div class="endpoint-header">
+                        <span class="endpoint-method badge-method">GET/PUT/PATCH</span>
+                        <span class="endpoint-path">/api/profiles/buyer/</span>
+                    </div>
+                    <p><strong>Authentication:</strong> Required (Buyer role)</p>
+                    <p><strong>Description:</strong> Manage current user's buyer profile</p>
+                    
+                    <h4>GET Response (200):</h4>
+                    <pre><code>{
+  "id": 1,
+  "profile_photo": "/media/buyers/profile.jpg",
+  "phone": "+250788123456",
+  "email": "buyer@example.com",
+  "address": "123 Main St, Kigali",
+  "city": "Kigali",
+  "country": "Rwanda",
+  "date_of_birth": "1990-05-15"
+}</code></pre>
+
+                    <h4>PATCH Request Body:</h4>
+                    <pre><code>{
+  "address": "string (optional)",
+  "city": "string (optional)",
+  "country": "string (optional)",
+  "date_of_birth": "date (optional)",
+  "phone": "string (optional)",
+  "email": "string (optional)"
+}</code></pre>
+
+                    <h4>How It Works:</h4>
+                    <ol>
+                        <li>Buyer accesses profile settings</li>
+                        <li>Updates shipping/billing information</li>
+                        <li>System saves updates to BuyerProfile</li>
+                        <li>Used for order shipping address pre-fill</li>
+                    </ol>
+                </div>
+
+                <!-- View Public Artist Profile -->
+                <div class="endpoint">
+                    <div class="endpoint-header">
+                        <span class="endpoint-method badge-method">GET</span>
+                        <span class="endpoint-path">/api/profiles/artist/&lt;user_id&gt;/</span>
+                    </div>
+                    <p><strong>Authentication:</strong> Not required</p>
+                    <p><strong>Description:</strong> View any artist's public profile</p>
+                    
+                    <h4>Success Response (200):</h4>
+                    <pre><code>{
+  "id": 5,
+  "bio": "Contemporary artist specializing in...",
+  "profile_photo": "/media/artists/artist5.jpg",
+  "website": "https://artist5.com",
+  "specialization": "Oil Painting",
+  "experience_years": 8,
+  "verified_by_admin": true,
+  "country": "Rwanda",
+  "city": "Kigali",
+  "instagram": "https://instagram.com/artist5",
+  ...
+}</code></pre>
+
+                    <h4>How It Works:</h4>
+                    <ol>
+                        <li>User clicks on artist name in artwork listing</li>
+                        <li>Frontend requests artist profile by user_id</li>
+                        <li>Returns public profile information (no sensitive data)</li>
+                        <li>Used to display artist portfolio page</li>
+                    </ol>
+                </div>
+
+                <!-- List All Verified Artists -->
+                <div class="endpoint">
+                    <div class="endpoint-header">
+                        <span class="endpoint-method badge-method">GET</span>
+                        <span class="endpoint-path">/api/artists/</span>
+                    </div>
+                    <p><strong>Authentication:</strong> Not required</p>
+                    <p><strong>Description:</strong> Get list of all admin-verified artists</p>
+                    
+                    <h4>Success Response (200):</h4>
+                    <pre><code>{
+  "count": 25,
+  "next": "http://localhost:8000/api/artists/?page=2",
+  "previous": null,
+  "results": [
+    {
+      "id": 1,
+      "bio": "Award-winning artist...",
+      "specialization": "Abstract Art",
+      "verified_by_admin": true,
+      "country": "Rwanda",
+      "city": "Kigali",
+      ...
+    },
+    ...
+  ]
+}</code></pre>
+
+                    <h4>How It Works:</h4>
+                    <ol>
+                        <li>Frontend displays "Featured Artists" page</li>
+                        <li>Request returns paginated list (20 per page)</li>
+                        <li>Only shows artists with <code>verified_by_admin = true</code></li>
+                        <li>Used for artist directory/browse page</li>
+                    </ol>
+                </div>
+            </div>
+
+            <!-- ARTWORK ENDPOINTS -->
+            <div class="section">
+                <h2>🖼 Artwork Endpoints</h2>
+
+                <!-- List Artworks -->
+                <div class="endpoint">
+                    <div class="endpoint-header">
+                        <span class="endpoint-method badge-method">GET</span>
+                        <span class="endpoint-path">/api/artworks/</span>
+                    </div>
+                    <p><strong>Authentication:</strong> Optional</p>
+                    <p><strong>Description:</strong> List approved artworks (public) or artist's own artworks</p>
+                    
+                    <h4>Query Parameters:</h4>
+                    <ul>
+                        <li><code>category</code> - Filter by category (e.g., "Painting")</li>
+                        <li><code>medium</code> - Filter by medium (e.g., "Oil")</li>
+                        <li><code>artist</code> - Filter by artist ID</li>
+                        <li><code>search</code> - Search in title, description, artist name</li>
+                        <li><code>ordering</code> - Sort by field (e.g., "-price", "created_at")</li>
+                        <li><code>page</code> - Page number (default: 1, size: 20)</li>
+                    </ul>
+
+                    <h4>Example:</h4>
+                    <pre>GET /api/artworks/?category=Painting&ordering=-price&page=1</pre>
+
+                    <h4>Success Response (200):</h4>
+                    <pre><code>{
+  "count": 150,
+  "next": "http://localhost:8000/api/artworks/?page=2",
+  "previous": null,
+  "results": [
+    {
+      "id": 1,
+      "artist_id": 5,
+      "artist_name": "artist1",
+      "title": "Sunset Over Volcanoes",
+      "slug": "sunset-over-volcanoes-5",
+      "category": "Painting",
+      "medium": "Oil",
+      "price": "1500.00",
+      "is_available": true,
+      "main_image": "/media/artworks/images/sunset.jpg",
+      "status": "approved",
+      "created_at": "2024-11-20T14:30:00Z"
+    },
+    ...
+  ]
+}</code></pre>
+
+                    <h4>How It Works:</h4>
+                    <ul>
+                        <li><strong>Public Users:</strong> See only <code>status='approved'</code> and <code>is_available=true</code></li>
+                        <li><strong>Artists:</strong> See their own artworks (all statuses)</li>
+                        <li><strong>Admins:</strong> See all artworks</li>
+                        <li>Frontend displays as gallery grid with filters</li>
+                    </ul>
+                </div>
+
+                <!-- Create Artwork -->
+                <div class="endpoint">
+                    <div class="endpoint-header">
+                        <span class="endpoint-method badge-post">POST</span>
+                        <span class="endpoint-path">/api/artworks/</span>
+                    </div>
+                    <p><strong>Authentication:</strong> Required (Artist role)</p>
+                    <p><strong>Description:</strong> Create new artwork (status automatically set to 'draft')</p>
+                    
+                    <h4>Request Body (multipart/form-data):</h4>
+                    <pre><code>{
+  "title": "string (required)",
+  "description": "string (required)",
+  "category": "string (optional, e.g., 'Painting', 'Sculpture')",
+  "medium": "string (optional, e.g., 'Oil', 'Acrylic', 'Digital')",
+  "price": "decimal (required, e.g., 1500.00)",
+  "width_cm": "decimal (optional)",
+  "height_cm": "decimal (optional)",
+  "depth_cm": "decimal (optional)",
+  "creation_year": "integer (optional)",
+  "main_image": "file (required)",
+  "additional_images": "json array of urls (optional)"
+}</code></pre>
+
+                    <h4>Success Response (201):</h4>
+                    <pre><code>{
+  "id": 42,
+  "artist": {
+    "id": 5,
+    "username": "artist1",
+    "email": "artist@example.com",
+    "role": "artist",
+    ...
+  },
+  "title": "Sunset Over Volcanoes",
+  "slug": "sunset-over-volcanoes-5",
+  "description": "A vibrant oil painting...",
+  "category": "Painting",
+  "medium": "Oil",
+  "width_cm": "80.00",
+  "height_cm": "60.00",
+  "depth_cm": null,
+  "creation_year": 2024,
+  "price": "1500.00",
+  "is_available": true,
+  "main_image": "/media/artworks/images/sunset.jpg",
+  "additional_images": null,
+  "status": "draft",
+  "admin_comment": null,
+  "created_at": "2024-11-26T10:30:00Z",
+  "updated_at": "2024-11-26T10:30:00Z"
+}</code></pre>
+
+                    <h4>How It Works:</h4>
+                    <ol>
+                        <li>Artist fills artwork creation form</li>
+                        <li>Uploads main image (required) and optional additional images</li>
+                        <li>System creates artwork with <code>status='draft'</code></li>
+                        <li>Auto-generates slug from title + artist ID</li>
+                        <li>Artwork not visible in public marketplace yet</li>
+                    </ol>
+                </div>
+
+                <!-- Get Artwork Details -->
+                <div class="endpoint">
+                    <div class="endpoint-header">
+                        <span class="endpoint-method badge-method">GET</span>
+                        <span class="endpoint-path">/api/artworks/&lt;id&gt;/</span>
+                    </div>
+                    <p><strong>Authentication:</strong> Optional</p>
+                    <p><strong>Description:</strong> Get detailed information about an artwork</p>
+                    
+                    <h4>Success Response (200):</h4>
+                    <pre><code>{
+  "id": 42,
+  "artist": {
+    "id": 5,
+    "username": "artist1",
+    "first_name": "John",
+    "last_name": "Artist",
+    "role": "artist",
+    "artist_profile": {
+      "bio": "Contemporary artist...",
+      "specialization": "Oil Painting",
+      "verified_by_admin": true
+    }
+  },
+  "title": "Sunset Over Volcanoes",
+  "slug": "sunset-over-volcanoes-5",
+  "description": "A vibrant oil painting capturing...",
+  "category": "Painting",
+  "medium": "Oil",
+  "width_cm": "80.00",
+  "height_cm": "60.00",
+  "creation_year": 2024,
+  "price": "1500.00",
+  "is_available": true,
+  "main_image": "/media/artworks/images/sunset.jpg",
+  "additional_images": [
+    "/media/artworks/images/sunset_detail1.jpg",
+    "/media/artworks/images/sunset_detail2.jpg"
+  ],
+  "status": "approved",
+  "admin_comment": null,
+  "created_at": "2024-11-26T10:30:00Z",
+  "updated_at": "2024-11-26T11:00:00Z"
+}</code></pre>
+
+                    <h4>How It Works:</h4>
+                    <ol>
+                        <li>User clicks artwork in gallery</li>
+                        <li>Frontend requests full details</li>
+                        <li>Displays artwork page with all information</li>
+                        <li>Shows artist profile link</li>
+                        <li>Displays "Add to Cart" if available</li>
+                    </ol>
+                </div>
+
+                <!-- Update Artwork -->
+                <div class="endpoint">
+                    <div class="endpoint-header">
+                        <span class="endpoint-method badge-put">PUT/PATCH</span>
+                        <span class="endpoint-path">/api/artworks/&lt;id&gt;/</span>
+                    </div>
+                    <p><strong>Authentication:</strong> Required (Artist owner only)</p>
+                    <p><strong>Description:</strong> Update own artwork</p>
+                    
+                    <h4>Request Body (PATCH - partial update):</h4>
+                    <pre><code>{
+  "title": "string (optional)",
+  "description": "string (optional)",
+  "price": "decimal (optional)",
+  "is_available": "boolean (optional)",
+  ...
+}</code></pre>
+
+                    <h4>Success Response (200):</h4>
+                    <pre><code>{
+  "id": 42,
+  "title": "Updated Title",
+  "description": "Updated description...",
+  "price": "1800.00",
+  ...
+}</code></pre>
+
+                    <h4>How It Works:</h4>
+                    <ol>
+                        <li>Artist edits their artwork</li>
+                        <li>System verifies artwork belongs to authenticated user</li>
+                        <li>Updates only provided fields</li>
+                        <li>Cannot change <code>status</code> (only admin can)</li>
+                        <li><code>slug</code> regenerates if title changes</li>
+                    </ol>
+                </div>
+
+                <!-- Delete Artwork -->
+                <div class="endpoint">
+                    <div class="endpoint-header">
+                        <span class="endpoint-method badge-delete">DELETE</span>
+                        <span class="endpoint-path">/api/artworks/&lt;id&gt;/</span>
+                    </div>
+                    <p><strong>Authentication:</strong> Required (Artist owner only)</p>
+                    <p><strong>Description:</strong> Delete own artwork</p>
+                    
+                    <h4>Success Response (204):</h4>
+                    <pre>No content</pre>
+
+                    <h4>How It Works:</h4>
+                    <ol>
+                        <li>Artist deletes artwork from their portfolio</li>
+                        <li>System verifies ownership</li>
+                        <li>Artwork permanently deleted from database</li>
+                        <li>Associated images remain in media folder (manual cleanup needed)</li>
+                    </ol>
+                </div>
+
+                <!-- Get My Artworks -->
+                <div class="endpoint">
+                    <div class="endpoint-header">
+                        <span class="endpoint-method badge-method">GET</span>
+                        <span class="endpoint-path">/api/artworks/my-artworks/</span>
+                    </div>
+                    <p><strong>Authentication:</strong> Required (Artist role)</p>
+                    <p><strong>Description:</strong> Get all artworks created by authenticated artist</p>
+                    
+                    <h4>Success Response (200):</h4>
+                    <pre><code>{
+  "count": 12,
+  "next": null,
+  "previous": null,
+  "results": [
+    {
+      "id": 42,
+      "artist_id": 5,
+      "artist_name": "artist1",
+      "title": "Sunset Over Volcanoes",
+      "status": "draft",
+      "price": "1500.00",
+      "created_at": "2024-11-26T10:30:00Z"
+    },
+    {
+      "id": 43,
+      "status": "submitted",
+      ...
+    },
+    {
+      "id": 44,
+      "status": "approved",
+      ...
+    }
+  ]
+}</code></pre>
+
+                    <h4>How It Works:</h4>
+                    <ol>
+                        <li>Artist navigates to "My Artworks" dashboard</li>
+                        <li>Returns all artworks regardless of status</li>
+                        <li>Artist can see draft, submitted, approved, rejected</li>
+                        <li>Used for artist portfolio management page</li>
+                    </ol>
+                </div>
+
+                <!-- Submit Artwork for Review -->
+                <div class="endpoint">
+                    <div class="endpoint-header">
+                        <span class="endpoint-method badge-post">POST</span>
+                        <span class="endpoint-path">/api/artworks/&lt;id&gt;/submit/</span>
+                    </div>
+                    <p><strong>Authentication:</strong> Required (Artist owner only)</p>
+                    <p><strong>Description:</strong> Submit artwork to admin for approval</p>
+                    
+                    <h4>Success Response (200):</h4>
+                    <pre><code>{
+  "id": 42,
+  "title": "Sunset Over Volcanoes",
+  "status": "submitted",
+  "admin_comment": null,
+  ...
+}</code></pre>
+
+                    <h4>Error Response (400):</h4>
+                    <pre><code>{
+  "error": "Cannot submit artwork with status: approved"
+}</code></pre>
+
+                    <h4>How It Works:</h4>
+                    <ol>
+                        <li>Artist clicks "Submit for Review" button</li>
+                        <li>Only works if status is <code>draft</code> or <code>rejected</code></li>
+                        <li>Changes status to <code>submitted</code></li>
+                        <li>Admin receives notification (optional feature)</li>
+                        <li>Artwork enters admin review queue</li>
+                    </ol>
+                </div>
+
+                <!-- Update Artwork Status (Admin) -->
+                <div class="endpoint">
+                    <div class="endpoint-header">
+                        <span class="endpoint-method badge-patch">PATCH</span>
+                        <span class="endpoint-path">/api/artworks/&lt;id&gt;/update-status/</span>
+                    </div>
+                    <p><strong>Authentication:</strong> Required (Admin role only)</p>
+                    <p><strong>Description:</strong> Admin approves or rejects artwork</p>
+                    
+                    <h4>Request Body:</h4>
+                    <pre><code>{
+  "status": "string (required, 'approved', 'rejected', or 'archived')",
+  "admin_comment": "string (optional, feedback for artist)"
+}</code></pre>
+
+                    <h4>Success Response (200):</h4>
+                    <pre><code>{
+  "id": 42,
+  "title": "Sunset Over Volcanoes",
+  "status": "approved",
+  "admin_comment": "Excellent work! Approved for marketplace.",
+  ...
+}</code></pre>
+
+                    <h4>How It Works:</h4>
+                    <ol>
+                        <li>Admin reviews submitted artworks</li>
+                        <li>Approves (<code>status='approved'</code>) → visible in marketplace</li>
+                        <li>Rejects (<code>status='rejected'</code>) → artist can resubmit</li>
+                        <li>Archives (<code>status='archived'</code>) → removed from display</li>
+                        <li>Admin comment sent to artist (notification optional)</li>
+                    </ol>
+                </div>
+            </div>
+
+            <!-- ORDER ENDPOINTS -->
+            <div class="section">
+                <h2>🛍 Order Endpoints</h2>
+
+                <!-- List Orders -->
+                <div class="endpoint">
+                    <div class="endpoint-header">
+                        <span class="endpoint-method badge-method">GET</span>
+                        <span class="endpoint-path">/api/orders/</span>
+                    </div>
+                    <p><strong>Authentication:</strong> Required</p>
+                    <p><strong>Description:</strong> List orders (buyers see own, admins see all)</p>
+                    
+                    <h4>Query Parameters:</h4>
+                    <ul>
+                        <li><code>status</code> - Filter by status</li>
+                        <li><code>payment_method</code> - Filter by payment method</li>
+                        <li><code>ordering</code> - Sort by created_at or total_amount</li>
+                        <li><code>page</code> - Page number</li>
+                    </ul>
+
+                    <h4>Success Response (200):</h4>
+                    <pre><code>{
+  "count": 45,
+  "next": "http://localhost:8000/api/orders/?page=2",
+  "previous": null,
+  "results": [
+    {
+      "id": 12,
+      "buyer_name": "buyer1",
+      "order_number": "HGA-A1B2C3D4",
+      "status": "paid",
+      "total_amount": "1515.00",
+      "created_at": "2024-11-25T14:30:00Z",
+      "items_count": 1
+    },
+    ...
+  ]
+}</code></pre>
+
+                    <h4>How It Works:</h4>
+                    <ul>
+                        <li><strong>Buyers:</strong> See only their own orders</li>
+                        <li><strong>Admins:</strong> See all orders with buyer information</li>
+                        <li><strong>Artists:</strong> Cannot access (no permission)</li>
+                        <li>Used for order history and management</li>
+                    </ul>
+                </div>
+
+                <!-- Create Order -->
+                <div class="endpoint">
+                    <div class="endpoint-header">
+                        <span class="endpoint-method badge-post">POST</span>
+                        <span class="endpoint-path">/api/orders/</span>
+                    </div>
+                    <p><strong>Authentication:</strong> Required (Buyer role)</p>
+                    <p><strong>Description:</strong> Create new order with artwork items</p>
+                    
+                    <h4>Request Body:</h4>
+                    <pre><code>{
+  "items": [
+    {
+      "artwork_id": 42,
+      "quantity": 1
+    },
+    {
+      "artwork_id": 45,
+      "quantity": 1
+    }
+  ],
+  "shipping_address": "string (required)",
+  "shipping_fee": "decimal (optional, default: 0.00)"
+}</code></pre>
+
+                    <h4>Success Response (201):</h4>
+                    <pre><code>{
+  "id": 12,
+  "buyer": {
+    "id": 8,
+    "username": "buyer1",
+    "email": "buyer@example.com"
+  },
+  "order_number": "HGA-A1B2C3D4",
+  "payment_method": null,
+  "payment_reference": null,
+  "status": "pending_payment",
+  "subtotal": "1500.00",
+  "shipping_fee": "15.00",
+  "total_amount": "1515.00",
+  "shipping_address": "123 Main St, Kigali, Rwanda",
+  "tracking_number": null,
+  "admin_notes": null,
+  "created_at": "2024-11-26T10:30:00Z",
+  "updated_at": "2024-11-26T10:30:00Z",
+  "items": [
+    {
+      "id": 20,
+      "artwork": {
+        "id": 42,
+        "title": "Sunset Over Volcanoes",
+        "artist_name": "artist1",
+        "price": "1500.00",
+        "main_image": "/media/artworks/images/sunset.jpg"
+      },
+      "price": "1500.00",
+      "quantity": 1
+    }
+  ]
+}</code></pre>
+
+                    <h4>How It Works:</h4>
+                    <ol>
+                        <li>Buyer adds artworks to cart in frontend</li>
+                        <li>Proceeds to checkout</li>
+                        <li>System validates:
+                            <ul>
+                                <li>All artworks exist and are approved</li>
+                                <li>All artworks are available (<code>is_available=true</code>)</li>
+                            </ul>
+                        </li>
+                        <li>Auto-generates unique order number</li>
+                        <li>Calculates subtotal from artwork prices</li>
+                        <li>Adds shipping fee</li>
+                        <li>Creates order with <code>status='pending_payment'</code></li>
+                        <li>Snapshots artwork prices in OrderItem (price protection)</li>
+                        <li>Returns order for payment initiation</li>
+                    </ol>
+                </div>
+
+                <!-- Get Order Details -->
+                <div class="endpoint">
+                    <div class="endpoint-header">
+                        <span class="endpoint-method badge-method">GET</span>
+                        <span class="endpoint-path">/api/orders/&lt;id&gt;/</span>
+                    </div>
+                    <p><strong>Authentication:</strong> Required</p>
+                    <p><strong>Description:</strong> Get order details (owner or admin only)</p>
+                    
+                    <h4>Success Response (200):</h4>
+                    <pre><code>{
+  "id": 12,
+  "buyer": {...},
+  "order_number": "HGA-A1B2C3D4",
+  "status": "paid",
+  "subtotal": "1500.00",
+  "shipping_fee": "15.00",
+  "total_amount": "1515.00",
+  "shipping_address": "123 Main St, Kigali, Rwanda",
+  "payment_method": "card",
+  "payment_reference": "TXN-ABC123DEF456",
+  "tracking_number": null,
+  "created_at": "2024-11-26T10:30:00Z",
+  "items": [
+    {
+      "id": 20,
+      "artwork": {
+        "id": 42,
+        "title": "Sunset Over Volcanoes",
+        "artist_name": "artist1",
+        "price": "1500.00",
+        "main_image": "/media/artworks/images/sunset.jpg",
+        "status": "sold"
+      },
+      "price": "1500.00",
+      "quantity": 1
+    }
+  ]
+}</code></pre>
+
+                    <h4>How It Works:</h4>
+                    <ol>
+                        <li>Buyer views order details page</li>
+                        <li>Shows complete order information</li>
+                        <li>Displays payment status</li>
+                        <li>Shows tracking info if shipped</li>
+                        <li>Lists all purchased artworks</li>
+                    </ol>
+                </div>
+
+                <!-- Get My Orders -->
+                <div class="endpoint">
+                    <div class="endpoint-header">
+                        <span class="endpoint-method badge-method">GET</span>
+                        <span class="endpoint-path">/api/orders/my-orders/</span>
+                    </div>
+                    <p><strong>Authentication:</strong> Required (Buyer role)</p>
+                    <p><strong>Description:</strong> Get all orders for authenticated buyer</p>
+                    
+                    <h4>Success Response (200):</h4>
+                    <pre><code>{
+  "count": 5,
+  "results": [
+    {
+      "id": 12,
+      "order_number": "HGA-A1B2C3D4",
+      "status": "delivered",
+      "total_amount": "1515.00",
+      "created_at": "2024-11-20T10:30:00Z"
+    },
+    {
+      "id": 15,
+      "order_number": "HGA-XYZ789",
+      "status": "shipped",
+      "total_amount": "3200.00",
+      "created_at": "2024-11-25T14:00:00Z"
+    }
+  ]
+}</code></pre>
+
+                    <h4>How It Works:</h4>
+                    <ol>
+                        <li>Buyer navigates to "My Orders" page</li>
+                        <li>Returns all orders sorted by date (newest first)</li>
+                        <li>Used for order tracking dashboard</li>
+                    </ol>
+                </div>
+
+                <!-- Update Order Status (Admin) -->
+                <div class="endpoint">
+                    <div class="endpoint-header">
+                        <span class="endpoint-method badge-patch">PATCH</span>
+                        <span class="endpoint-path">/api/orders/&lt;id&gt;/update-status/</span>
+                    </div>
+                    <p><strong>Authentication:</strong> Required (Admin role)</p>
+                    <p><strong>Description:</strong> Admin updates order status and tracking</p>
+                    
+                    <h4>Request Body:</h4>
+                    <pre><code>{
+  "status": "string (required, e.g., 'paid', 'processing', 'shipped', 'delivered')",
+  "tracking_number": "string (optional)",
+  "admin_notes": "string (optional)"
+}</code></pre>
+
+                    <h4>Success Response (200):</h4>
+                    <pre><code>{
+  "id": 12,
+  "order_number": "HGA-A1B2C3D4",
+  "status": "shipped",
+  "tracking_number": "DHL123456789",
+  "admin_notes": "Shipped via DHL Express",
+  ...
+}</code></pre>
+
+                    <h4>How It Works:</h4>
+                    <ol>
+                        <li>Admin reviews order</li>
+                        <li>Updates status as order progresses</li>
+                        <li>Adds tracking number when shipped</li>
+                        <li>If status changes to <code>paid</code>:
+                            <ul>
+                                <li>All artworks in order marked <code>is_available=false</code></li>
+                                <li>All artworks status changed to <code>sold</code></li>
+                            </ul>
+                        </li>
+                        <li>Buyer receives notification (optional)</li>
+                    </ol>
+                </div>
+            </div>
+
+            <!-- PAYMENT ENDPOINTS -->
+            <div class="section">
+                <h2>💳 Payment Endpoints</h2>
+
+                <!-- Initiate Payment -->
+                <div class="endpoint">
+                    <div class="endpoint-header">
+                        <span class="endpoint-method badge-post">POST</span>
+                        <span class="endpoint-path">/api/payments/initiate/&lt;order_id&gt;/</span>
+                    </div>
+                    <p><strong>Authentication:</strong> Required (Buyer role)</p>
+                    <p><strong>Description:</strong> Start payment process for an order</p>
+                    
+                    <h4>Request Body:</h4>
+                    <pre><code>{
+  "payment_method": "string (required, 'card', 'momo', 'paypal', 'bank')"
+}</code></pre>
+
+                    <h4>Success Response (201):</h4>
+                    <pre><code>{
+  "id": 8,
+  "order": {
+    "id": 12,
+    "order_number": "HGA-A1B2C3D4",
+    "status": "pending_payment",
+    "total_amount": "1515.00"
+  },
+  "user": {
+    "id": 8,
+    "username": "buyer1",
+    "email": "buyer@example.com"
+  },
+  "payment_method": "card",
+  "amount": "1515.00",
+  "transaction_id": "TXN-ABC123DEF456",
+  "provider_response": null,
+  "status": "pending",
+  "created_at": "2024-11-26T10:35:00Z",
+  "updated_at": "2024-11-26T10:35:00Z",
+  "logs": [
+    {
+      "id": 1,
+      "message": "Payment initiated for order HGA-A1B2C3D4",
+      "timestamp": "2024-11-26T10:35:00Z"
+    }
+  ]
+}</code></pre>
+
+                    <h4>Error Response (400):</h4>
+                    <pre><code>{
+  "error": "Payment already exists for this order",
+  "payment_id": 8
+}</code></pre>
+
+                    <h4>How It Works:</h4>
+                    <ol>
+                        <li>Buyer completes order and chooses payment method</li>
+                        <li>System creates PaymentTransaction with <code>status='pending'</code></li>
+                        <li>Auto-generates unique transaction_id</li>
+                        <li>Creates initial payment log entry</li>
+                        <li>Returns transaction details for payment gateway integration</li>
+                        <li>Frontend redirects to payment gateway (Stripe, PayPal, etc.)</li>
+                    </ol>
+                </div>
+
+                <!-- Payment Webhook -->
+                <div class="endpoint">
+                    <div class="endpoint-header">
+                        <span class="endpoint-method badge-post">POST</span>
+                        <span class="endpoint-path">/api/payments/webhook/</span>
+                    </div>
+                    <p><strong>Authentication:</strong> Not required (called by payment gateway)</p>
+                    <p><strong>Description:</strong> Receive payment confirmation from gateway</p>
+                    
+                    <h4>Request Body:</h4>
+                    <pre><code>{
+  "transaction_id": "string (required)",
+  "status": "string (required, 'successful', 'failed', 'cancelled')",
+  "amount": "decimal (optional)",
+  "provider_response": "object (optional, gateway-specific data)"
+}</code></pre>
+
+                    <h4>Success Response (200):</h4>
+                    <pre><code>{
+  "message": "Webhook processed successfully",
+  "transaction_id": "TXN-ABC123DEF456",
+  "status": "successful"
+}</code></pre>
+
+                    <h4>How It Works:</h4>
+                    <ol>
+                        <li>Payment gateway processes payment</li>
+                        <li>Gateway calls this webhook with result</li>
+                        <li>System validates transaction_id exists</li>
+                        <li>Updates PaymentTransaction status</li>
+                        <li>Stores provider_response for records</li>
+                        <li>Creates payment log entry</li>
+                        <li><strong>If status = 'successful':</strong>
+                            <ul>
+                                <li>Order status → <code>paid</code></li>
+                                <li>Order payment_reference → transaction_id</li>
+                                <li>All artworks → <code>is_available=false</code>, <code>status='sold'</code></li>
+                                <li>Payment log: "Order marked as paid"</li>
+                            </ul>
+                        </li>
+                        <li><strong>If status = 'failed':</strong>
+                            <ul>
+                                <li>Payment log: "Payment failed - order remains unpaid"</li>
+                            </ul>
+                        </li>
+                        <li>Frontend polls or uses webhooks to update UI</li>
+                    </ol>
+
+                    <div class="warning-box">
+                        <strong>Security Note:</strong> Production should verify webhook signature
+                    </div>
+                </div>
+
+                <!-- Get My Payments -->
+                <div class="endpoint">
+                    <div class="endpoint-header">
+                        <span class="endpoint-method badge-method">GET</span>
+                        <span class="endpoint-path">/api/payments/my-payments/</span>
+                    </div>
+                    <p><strong>Authentication:</strong> Required</p>
+                    <p><strong>Description:</strong> Get all payments for authenticated user</p>
+                    
+                    <h4>Success Response (200):</h4>
+                    <pre><code>{
+  "count": 3,
+  "results": [
+    {
+      "id": 8,
+      "order_number": "HGA-A1B2C3D4",
+      "payment_method": "card",
+      "amount": "1515.00",
+      "status": "successful",
+      "created_at": "2024-11-26T10:35:00Z"
+    },
+    ...
+  ]
+}</code></pre>
+
+                    <h4>How It Works:</h4>
+                    <ol>
+                        <li>User navigates to payment history</li>
+                        <li>Returns all transactions sorted by date</li>
+                        <li>Used for transaction tracking</li>
+                    </ol>
+                </div>
+
+                <!-- Get Payment Details -->
+                <div class="endpoint">
+                    <div class="endpoint-header">
+                        <span class="endpoint-method badge-method">GET</span>
+                        <span class="endpoint-path">/api/payments/&lt;id&gt;/</span>
+                    </div>
+                    <p><strong>Authentication:</strong> Required</p>
+                    <p><strong>Description:</strong> Get payment transaction details (owner or admin)</p>
+                    
+                    <h4>Success Response (200):</h4>
+                    <pre><code>{
+  "id": 8,
+  "order": {
+    "id": 12,
+    "order_number": "HGA-A1B2C3D4",
+    "status": "paid",
+    "total_amount": "1515.00"
+  },
+  "user": {...},
+  "payment_method": "card",
+  "amount": "1515.00",
+  "transaction_id": "TXN-ABC123DEF456",
+  "provider_response": {
+    "gateway": "stripe",
+    "charge_id": "ch_3MmlLr..."
+  },
+  "status": "successful",
+  "created_at": "2024-11-26T10:35:00Z",
+  "updated_at": "2024-11-26T10:36:00Z",
+  "logs": [
+    {
+      "id": 1,
+      "message": "Payment initiated for order HGA-A1B2C3D4",
+      "timestamp": "2024-11-26T10:35:00Z"
+    },
+    {
+      "id": 2,
+      "message": "Webhook received: status changed to successful",
+      "timestamp": "2024-11-26T10:36:00Z"
+    },
+    {
+      "id": 3,
+      "message": "Order HGA-A1B2C3D4 marked as paid",
+      "timestamp": "2024-11-26T10:36:00Z"
+    }
+  ]
+}</code></pre>
+
+                    <h4>How It Works:</h4>
+                    <ol>
+                        <li>User views payment details</li>
+                        <li>Shows complete transaction history</li>
+                        <li>Displays all log entries for transparency</li>
+                        <li>Used for payment verification and support</li>
+                    </ol>
+                </div>
+            </div>
+
+            <!-- DATA MODELS -->
+            <div class="section">
+                <h2>📊 Data Models</h2>
+
+                <h3>User</h3>
+                <pre><code>{
+  id: integer,
+  username: string (unique),
+  email: string,
+  first_name: string,
+  last_name: string,
+  role: "artist" | "buyer" | "admin",
+  phone: string,
+  is_verified: boolean,
+  join_date: datetime
+}</code></pre>
+
+                <h3>Artwork Statuses</h3>
+                <pre><code>"draft"      // Created but not submitted
+"submitted"  // Sent to admin for review
+"approved"   // Admin approved - visible in marketplace
+"rejected"   // Admin rejected - artist can resubmit
+"sold"       // Purchased by buyer
+"archived"   // Admin archived - hidden</code></pre>
+
+                <h3>Order Statuses</h3>
+                <pre><code>"pending_payment" // Order created, awaiting payment
+"paid"            // Payment confirmed
+"processing"      // Order being prepared
+"shipped"         // Order shipped to buyer
+"delivered"       // Order delivered
+"cancelled"       // Order cancelled
+"refunded"        // Payment refunded</code></pre>
+
+                <h3>Payment Statuses</h3>
+                <pre><code>"pending"     // Payment initiated, awaiting confirmation
+"successful"  // Payment completed
+"failed"      // Payment failed
+"cancelled"   // Payment cancelled
+"refunded"    // Payment refunded</code></pre>
+            </div>
+
+            <!-- STATUS CODES -->
+            <div class="section">
+                <h2>📋 Status Codes</h2>
+                <table>
+                    <tr>
+                        <th>Code</th>
+                        <th>Meaning</th>
+                        <th>When</th>
+                    </tr>
+                    <tr>
+                        <td><span class="status-code status-200">200</span></td>
+                        <td>OK</td>
+                        <td>Successful GET, PUT, PATCH</td>
+                    </tr>
+                    <tr>
+                        <td><span class="status-code status-201">201</span></td>
+                        <td>Created</td>
+                        <td>Successful POST (resource created)</td>
+                    </tr>
+                    <tr>
+                        <td><span class="status-code status-204">204</span></td>
+                        <td>No Content</td>
+                        <td>Successful DELETE</td>
+                    </tr>
+                    <tr>
+                        <td><span class="status-code status-400">400</span></td>
+                        <td>Bad Request</td>
+                        <td>Validation error, malformed data</td>
+                    </tr>
+                    <tr>
+                        <td><span class="status-code status-401">401</span></td>
+                        <td>Unauthorized</td>
+                        <td>Missing or invalid token</td>
+                    </tr>
+                    <tr>
+                        <td><span class="status-code status-403">403</span></td>
+                        <td>Forbidden</td>
+                        <td>No permission for action</td>
+                    </tr>
+                    <tr>
+                        <td><span class="status-code status-404">404</span></td>
+                        <td>Not Found</td>
+                        <td>Resource doesn't exist</td>
+                    </tr>
+                    <tr>
+                        <td><span class="status-code status-500">500</span></td>
+                        <td>Server Error</td>
+                        <td>Internal server error</td>
+                    </tr>
+                </table>
+            </div>
+
+            <!-- WORKFLOW DIAGRAMS -->
+            <div class="section">
+                <h2>🔄 Workflow Diagrams</h2>
+
+                <h3>Artist Workflow</h3>
+                <pre>1. Register (role: artist) → Auto-create ArtistProfile
+2. Update artist profile (bio, portfolio, social links)
+3. Create artwork (status: draft)
+4. Submit artwork for review (status: submitted)
+5. Admin approves (status: approved) → Visible in marketplace
+6. Buyer purchases → Artwork status: sold</pre>
+
+                <h3>Buyer Workflow</h3>
+                <pre>1. Register (role: buyer) → Auto-create BuyerProfile
+2. Update buyer profile (shipping address)
+3. Browse approved artworks
+4. Add to cart
+5. Create order (status: pending_payment)
+6. Initiate payment
+7. Payment gateway processes
+8. Webhook confirms payment
+9. Order status: paid, Artwork status: sold
+10. Admin ships (status: shipped)
+11. Order delivered (status: delivered)</pre>
+
+                <h3>Payment Flow</h3>
+                <pre>1. Buyer creates order
+2. POST /api/payments/initiate/&lt;order_id&gt;/
+   → Creates PaymentTransaction (status: pending)
+3. Frontend redirects to payment gateway
+4. Gateway processes payment
+5. Gateway calls POST /api/payments/webhook/
+   → Updates payment status
+   → If successful: Order → paid, Artwork → sold
+6. Frontend displays confirmation</pre>
+
+                <h3>Admin Approval Workflow</h3>
+                <pre>1. Artist submits artwork (status: submitted)
+2. Admin views in admin panel or via API
+3. Admin reviews artwork
+4. Option A: Approve
+   → PATCH /api/artworks/&lt;id&gt;/update-status/
+   → status: approved, add comment
+   → Artwork visible in marketplace
+5. Option B: Reject
+   → PATCH /api/artworks/&lt;id&gt;/update-status/
+   → status: rejected, add feedback comment
+   → Artist can edit and resubmit</pre>
+            </div>
+
+            <!-- INTEGRATION NOTES -->
+            <div class="section">
+                <h2>🔗 Integration Notes</h2>
+
+                <h3>Frontend Integration</h3>
+                <ol>
+                    <li>Store JWT tokens in localStorage or secure cookie</li>
+                    <li>Include <code>Authorization: Bearer &lt;token&gt;</code> in all authenticated requests</li>
+                    <li>Handle token refresh on 401 errors</li>
+                    <li>Display errors from validation responses</li>
+                    <li>Implement pagination for list views</li>
+                    <li>Use status values to control UI state</li>
+                </ol>
+
+                <h3>Payment Gateway Integration</h3>
+                <ol>
+                    <li>Use <code>transaction_id</code> as reference</li>
+                    <li>Configure webhook URL: <code>https://yourdomain.com/api/payments/webhook/</code></li>
+                    <li>Send payment confirmation with transaction_id</li>
+                    <li>Include provider-specific data in <code>provider_response</code></li>
+                </ol>
+
+                <h3>Media Files</h3>
+                <ul>
+                    <li>Images served from <code>/media/</code> directory</li>
+                    <li>Full URL: <code>http://localhost:8000/media/artworks/images/sunset.jpg</code></li>
+                    <li>Frontend displays using <code>&lt;img src={artwork.main_image}&gt;</code></li>
+                </ul>
+            </div>
+
+            <!-- TESTING -->
+            <div class="section">
+                <h2>🧪 Testing</h2>
+                <p>Run Django tests:</p>
+                <pre>python manage.py test</pre>
+                
+                <div class="info-box">
+                    <strong>Testing Resources:</strong> See <code>QUICKSTART.md</code> and <code>API_SAMPLES.md</code> for complete testing examples and sample requests.
+                </div>
+            </div>
+
+            <!-- DEPLOYMENT -->
+            <div class="section">
+                <h2>🚀 Deployment Checklist</h2>
+                <div class="warning-box">
+                    <strong>Before deploying to production:</strong>
+                    <ul>
+                        <li>Set <code>DEBUG = False</code> in production</li>
+                        <li>Configure <code>ALLOWED_HOSTS</code></li>
+                        <li>Use PostgreSQL/MySQL instead of SQLite</li>
+                        <li>Set up environment variables for secrets</li>
+                        <li>Configure cloud storage for media files (AWS S3, Cloudinary)</li>
+                        <li>Implement payment gateway signature verification</li>
+                        <li>Set up HTTPS</li>
+                        <li>Configure production CORS origins</li>
+                        <li>Set up logging and monitoring</li>
+                    </ul>
+                </div>
+            </div>
+
+            <!-- SUPPORT -->
+            <div class="section">
+                <h2>💬 Support</h2>
+                <p>Please don't hesitate to contact Vedaste MUGABO Tel: +250782234570.</p>
+            </div>
+
+        </div>
+
+        <footer>
+            <p><strong>HangaArt API © 2025</strong></p>
+            <p>Built with Django & Django REST Framework</p>
+            <p style="margin-top: 1rem; opacity: 0.8;">
+                API Base URL: <code>https://hangart.pythonanywhere.com/api/</code>
+            </p>
+            <p style="margin-top: 0.5rem; opacity: 0.8;">
+                API Version:

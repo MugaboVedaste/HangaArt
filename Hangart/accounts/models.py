@@ -42,7 +42,7 @@ class ArtistProfile(models.Model):
 
     def __str__(self):
         return f"{self.user.username} - Artist Profile"
-    
+
 class BuyerProfile(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE, related_name='buyer_profile')
     profile_photo = models.ImageField(upload_to='buyers/', blank=True, null=True)
@@ -61,11 +61,26 @@ class BuyerProfile(models.Model):
 
     def __str__(self):
         return f"{self.user.username} - Buyer Profile"
-    
+
 class AdminProfile(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE, related_name='admin_profile')
     employee_id = models.CharField(max_length=50, unique=True)
     position = models.CharField(max_length=100, blank=True, null=True)
     phone = models.CharField(max_length=20, blank=True, null=True)
     email = models.EmailField(blank=True, null=True)
+
+from django.db.models.signals import post_save
+from django.dispatch import receiver
+
+@receiver(post_save, sender=User)
+def create_admin_profile(sender, instance, created, **kwargs):
+    if created and instance.role == 'admin':
+        AdminProfile.objects.get_or_create(
+            user=instance,
+            defaults={
+                'employee_id': f'EMP{instance.id:04d}',
+                'position': 'Admin'
+            }
+        )
+
 
