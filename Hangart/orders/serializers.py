@@ -48,6 +48,8 @@ class OrderSerializer(serializers.ModelSerializer):
         from artworks.models import Artwork
         
         items_data = validated_data.pop('items')
+        shipping_fee = validated_data.pop('shipping_fee', 0)
+        shipping_address = validated_data.pop('shipping_address', '')
         
         # Generate unique order number
         order_number = f"HGA-{uuid.uuid4().hex[:8].upper()}"
@@ -58,7 +60,6 @@ class OrderSerializer(serializers.ModelSerializer):
             artwork = Artwork.objects.get(id=item_data['artwork_id'])
             subtotal += artwork.price * item_data['quantity']
         
-        shipping_fee = validated_data.get('shipping_fee', 0)
         total_amount = subtotal + shipping_fee
         
         # Create order
@@ -68,7 +69,8 @@ class OrderSerializer(serializers.ModelSerializer):
             subtotal=subtotal,
             shipping_fee=shipping_fee,
             total_amount=total_amount,
-            **validated_data
+            shipping_address=shipping_address,
+            status='pending_payment'
         )
         
         # Create order items
