@@ -61,6 +61,7 @@ class Order(models.Model):
 
     subtotal = models.DecimalField(max_digits=12, decimal_places=2, default=0.00)
     shipping_fee = models.DecimalField(max_digits=12, decimal_places=2, default=0.00)
+    commission = models.DecimalField(max_digits=12, decimal_places=2, default=0.00, help_text="Platform commission (10%)")
     total_amount = models.DecimalField(max_digits=12, decimal_places=2, default=0.00)
 
     shipping_address = models.TextField(blank=True, null=True)

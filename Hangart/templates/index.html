@@ -1192,9 +1192,13 @@ python manage.py migrate</pre>
       "quantity": 1
     }
   ],
-  "shipping_address": "string (required)",
-  "shipping_fee": "decimal (optional, default: 0.00)"
+  "shipping_address": "string (required)"
 }</code></pre>
+
+                    <div class="info-box">
+                        <strong>Note:</strong> Shipping fee is automatically set to $10.00 (fixed). 
+                        A 10% platform commission is calculated from the subtotal and deducted from artist earnings (not added to buyer's total).
+                    </div>
 
                     <h4>Success Response (201):</h4>
                     <pre><code>{
@@ -1209,8 +1213,9 @@ python manage.py migrate</pre>
   "payment_reference": null,
   "status": "pending_payment",
   "subtotal": "1500.00",
-  "shipping_fee": "15.00",
-  "total_amount": "1515.00",
+  "shipping_fee": "10.00",
+  "commission": "150.00",
+  "total_amount": "1510.00",
   "shipping_address": "123 Main St, Kigali, Rwanda",
   "tracking_number": null,
   "admin_notes": null,
@@ -1267,8 +1272,9 @@ python manage.py migrate</pre>
   "order_number": "HGA-A1B2C3D4",
   "status": "paid",
   "subtotal": "1500.00",
-  "shipping_fee": "15.00",
-  "total_amount": "1515.00",
+  "shipping_fee": "10.00",
+  "commission": "150.00",
+  "total_amount": "1510.00",
   "shipping_address": "123 Main St, Kigali, Rwanda",
   "payment_method": "card",
   "payment_reference": "TXN-ABC123DEF456",
@@ -1381,9 +1387,15 @@ python manage.py migrate</pre>
                 </div>
             </div>
 
-            <!-- PAYMENT ENDPOINTS -->
+            <!-- PAYMENT ENDPOINTS - UPDATED SECTION -->
             <div class="section">
                 <h2>💳 Payment Endpoints</h2>
+                
+                <div class="warning-box">
+                    <strong>Payment Status:</strong> Currently only MTN MoMo Rwanda is fully implemented and tested. 
+                    Other payment methods (card, PayPal, bank) are available in the API but require additional 
+                    gateway configuration for production use.
+                </div>
 
                 <!-- Initiate Payment -->
                 <div class="endpoint">
@@ -1394,66 +1406,153 @@ python manage.py migrate</pre>
                     <p><strong>Authentication:</strong> Required (Buyer role)</p>
                     <p><strong>Description:</strong> Start payment process for an order</p>
                     
-                    <h4>Request Body:</h4>
+                    <h4>Request Body (for MTN MoMo):</h4>
                     <pre><code>{
-  "payment_method": "string (required, 'card', 'momo', 'paypal', 'bank')"
+  "payment_method": "momo",
+  "phone_number": "string (optional, format: 250788123456)",
+  "currency": "string (optional, default: 'RWF' in production, 'EUR' in sandbox)",
+  "payer_message": "string (optional, appears on USSD prompt)"
 }</code></pre>
 
-                    <h4>Success Response (201):</h4>
+                    <div class="info-box">
+                        <strong>Note:</strong> phone_number can be provided in the request body or will be retrieved from the user's profile. 
+                        Sandbox environment uses EUR currency. Production uses RWF.
+                    </div>
+
+                    <h4>Phone Number Format (if provided):</h4>
+                    <ul>
+                        <li><strong>Correct:</strong> 250788123456, 250728123456</li>
+                        <li><strong>Incorrect:</strong> 0788123456, +250788123456</li>
+                        <li>Must be Rwandan MTN number starting with 2507</li>
+                        <li>If not provided in request, phone will be retrieved from user profile</li>
+                    </ul>
+
+                    <h4>Success Response (201) - MTN MoMo:</h4>
                     <pre><code>{
-  "id": 8,
-  "order": {
-    "id": 12,
-    "order_number": "HGA-A1B2C3D4",
-    "status": "pending_payment",
-    "total_amount": "1515.00"
-  },
-  "user": {
+  "success": true,
+  "payment": {
     "id": 8,
-    "username": "buyer1",
-    "email": "buyer@example.com"
+    "order": {
+      "id": 12,
+      "order_number": "HGA-A1B2C3D4",
+      "total_amount": "52000.00",
+      "currency": "RWF"
+    },
+    "payment_method": "momo",
+    "amount": "52000.00",
+    "phone": "250788123456",
+    "transaction_id": "TXN-ABC123DEF456",
+    "status": "pending",
+    "created_at": "2024-12-10T14:35:00Z"
   },
-  "payment_method": "card",
-  "amount": "1515.00",
-  "transaction_id": "TXN-ABC123DEF456",
-  "provider_response": null,
-  "status": "pending",
-  "created_at": "2024-11-26T10:35:00Z",
-  "updated_at": "2024-11-26T10:35:00Z",
-  "logs": [
-    {
-      "id": 1,
-      "message": "Payment initiated for order HGA-A1B2C3D4",
-      "timestamp": "2024-11-26T10:35:00Z"
-    }
-  ]
+  "message": "Payment request sent. Customer will receive USSD prompt.",
+  "instructions": "Please check your phone and approve the payment request."
 }</code></pre>
 
-                    <h4>Error Response (400):</h4>
+                    <h4>How It Works (MTN MoMo):</h4>
+                    <ol>
+                        <li>Buyer selects "MoMo" as payment method</li>
+                        <li>System validates phone number format (2507xxxxxxx)</li>
+                        <li>Calls MTN MoMo API to initiate payment request</li>
+                        <li>Sends USSD prompt to buyer's phone</li>
+                        <li>Creates payment transaction with <code>status='pending'</code></li>
+                        <li>Payment times out after 5 minutes if not approved</li>
+                    </ol>
+
+                    <div class="info-box">
+                        <strong>Note:</strong> In sandbox mode, payments are auto-approved after 30-60 seconds. 
+                        In production, buyer must approve via USSD prompt on their phone.
+                    </div>
+                </div>
+
+                <!-- Check Payment Status -->
+                <div class="endpoint">
+                    <div class="endpoint-header">
+                        <span class="endpoint-method badge-method">GET</span>
+                        <span class="endpoint-path">/api/payments/check/&lt;payment_id&gt;/</span>
+                    </div>
+                    <p><strong>Authentication:</strong> Required (Buyer or Admin)</p>
+                    <p><strong>Description:</strong> Check payment status and poll MTN MoMo API for updates</p>
+                    
+                    <div class="warning-box">
+                        <strong>IMPORTANT:</strong> Frontend MUST poll this endpoint every 10-15 seconds after payment initiation. 
+                        Payment status won't update automatically without polling.
+                    </div>
+
+                    <h4>Success Response (200) - Payment Successful:</h4>
                     <pre><code>{
-  "error": "Payment already exists for this order",
-  "payment_id": 8
+  "status": "successful",
+  "payment": {
+    "id": 8,
+    "transaction_id": "TXN-ABC123DEF456",
+    "amount": "52000.00",
+    "phone": "250788123456",
+    "status": "successful",
+    "provider_response": {
+      "financialTransactionId": "1234567890",
+      "externalId": "TXN-ABC123DEF456",
+      "amount": "52000",
+      "currency": "RWF",
+      "status": "SUCCESSFUL"
+    }
+  },
+  "order_updated": {
+    "order_id": 12,
+    "status": "paid",
+    "artworks_updated": 1
+  },
+  "message": "Payment confirmed by MTN MoMo"
+}</code></pre>
+
+                    <h4>Automatic Actions on Successful Payment:</h4>
+                    <ol>
+                        <li>Order status changes from <code>pending_payment</code> to <code>paid</code></li>
+                        <li>All artworks in the order are marked as <code>sold</code></li>
+                        <li>Artwork <code>is_available</code> changes to <code>false</code></li>
+                        <li>Payment logs are updated with transaction details</li>
+                    </ol>
+                </div>
+
+                <!-- MoMo Webhook -->
+                <div class="endpoint">
+                    <div class="endpoint-header">
+                        <span class="endpoint-method badge-post">POST</span>
+                        <span class="endpoint-path">/api/payments/momo-webhook/</span>
+                    </div>
+                    <p><strong>Authentication:</strong> None (called by MTN MoMo API)</p>
+                    <p><strong>Description:</strong> MTN MoMo API callback for instant payment updates</p>
+                    
+                    <h4>Request Body (from MTN MoMo):</h4>
+                    <pre><code>{
+  "financialTransactionId": "1234567890",
+  "externalId": "TXN-ABC123DEF456",
+  "amount": "52000",
+  "currency": "RWF",
+  "payer": {
+    "partyId": "250788123456",
+    "partyIdType": "MSISDN"
+  },
+  "status": "SUCCESSFUL"
 }</code></pre>
 
                     <h4>How It Works:</h4>
                     <ol>
-                        <li>Buyer completes order and chooses payment method</li>
-                        <li>System creates PaymentTransaction with <code>status='pending'</code></li>
-                        <li>Auto-generates unique transaction_id</li>
-                        <li>Creates initial payment log entry</li>
-                        <li>Returns transaction details for payment gateway integration</li>
-                        <li>Frontend redirects to payment gateway (Stripe, PayPal, etc.)</li>
+                        <li>MTN MoMo processes payment on buyer's phone</li>
+                        <li>MTN API calls this webhook with payment result</li>
+                        <li>System updates payment status in database</li>
+                        <li>If successful, updates order and artwork status</li>
+                        <li>Creates payment log entry</li>
                     </ol>
                 </div>
 
-                <!-- Payment Webhook -->
+                <!-- Payment Webhook (Legacy - for other payment methods) -->
                 <div class="endpoint">
                     <div class="endpoint-header">
                         <span class="endpoint-method badge-post">POST</span>
                         <span class="endpoint-path">/api/payments/webhook/</span>
                     </div>
                     <p><strong>Authentication:</strong> Not required (called by payment gateway)</p>
-                    <p><strong>Description:</strong> Receive payment confirmation from gateway</p>
+                    <p><strong>Description:</strong> Receive payment confirmation from other gateways</p>
                     
                     <h4>Request Body:</h4>
                     <pre><code>{
@@ -1463,39 +1562,9 @@ python manage.py migrate</pre>
   "provider_response": "object (optional, gateway-specific data)"
 }</code></pre>
 
-                    <h4>Success Response (200):</h4>
-                    <pre><code>{
-  "message": "Webhook processed successfully",
-  "transaction_id": "TXN-ABC123DEF456",
-  "status": "successful"
-}</code></pre>
-
-                    <h4>How It Works:</h4>
-                    <ol>
-                        <li>Payment gateway processes payment</li>
-                        <li>Gateway calls this webhook with result</li>
-                        <li>System validates transaction_id exists</li>
-                        <li>Updates PaymentTransaction status</li>
-                        <li>Stores provider_response for records</li>
-                        <li>Creates payment log entry</li>
-                        <li><strong>If status = 'successful':</strong>
-                            <ul>
-                                <li>Order status → <code>paid</code></li>
-                                <li>Order payment_reference → transaction_id</li>
-                                <li>All artworks → <code>is_available=false</code>, <code>status='sold'</code></li>
-                                <li>Payment log: "Order marked as paid"</li>
-                            </ul>
-                        </li>
-                        <li><strong>If status = 'failed':</strong>
-                            <ul>
-                                <li>Payment log: "Payment failed - order remains unpaid"</li>
-                            </ul>
-                        </li>
-                        <li>Frontend polls or uses webhooks to update UI</li>
-                    </ol>
-
-                    <div class="warning-box">
-                        <strong>Security Note:</strong> Production should verify webhook signature
+                    <div class="info-box">
+                        <strong>Note:</strong> This endpoint is for future payment gateway integrations (Stripe, PayPal, etc.). 
+                        Currently only MTN MoMo webhook is actively used.
                     </div>
                 </div>
 
@@ -1508,6 +1577,14 @@ python manage.py migrate</pre>
                     <p><strong>Authentication:</strong> Required</p>
                     <p><strong>Description:</strong> Get all payments for authenticated user</p>
                     
+                    <h4>Query Parameters:</h4>
+                    <ul>
+                        <li><code>status</code> - Filter by payment status</li>
+                        <li><code>payment_method</code> - Filter by method (momo, card, etc.)</li>
+                        <li><code>ordering</code> - Sort by created_at (default: -created_at)</li>
+                        <li><code>page</code> - Page number for pagination</li>
+                    </ul>
+
                     <h4>Success Response (200):</h4>
                     <pre><code>{
   "count": 3,
@@ -1515,21 +1592,22 @@ python manage.py migrate</pre>
     {
       "id": 8,
       "order_number": "HGA-A1B2C3D4",
-      "payment_method": "card",
-      "amount": "1515.00",
+      "payment_method": "momo",
+      "amount": "52000.00",
+      "phone": "250788123456",
       "status": "successful",
-      "created_at": "2024-11-26T10:35:00Z"
+      "created_at": "2024-12-10T14:35:00Z"
     },
-    ...
+    {
+      "id": 7,
+      "order_number": "HGA-EFG567H89",
+      "payment_method": "card",
+      "amount": "3200.00",
+      "status": "pending",
+      "created_at": "2024-12-09T11:20:00Z"
+    }
   ]
 }</code></pre>
-
-                    <h4>How It Works:</h4>
-                    <ol>
-                        <li>User navigates to payment history</li>
-                        <li>Returns all transactions sorted by date</li>
-                        <li>Used for transaction tracking</li>
-                    </ol>
                 </div>
 
                 <!-- Get Payment Details -->
@@ -1538,55 +1616,80 @@ python manage.py migrate</pre>
                         <span class="endpoint-method badge-method">GET</span>
                         <span class="endpoint-path">/api/payments/&lt;id&gt;/</span>
                     </div>
-                    <p><strong>Authentication:</strong> Required</p>
-                    <p><strong>Description:</strong> Get payment transaction details (owner or admin)</p>
+                    <p><strong>Authentication:</strong> Required (Owner or Admin)</p>
+                    <p><strong>Description:</strong> Get payment transaction details</p>
                     
-                    <h4>Success Response (200):</h4>
+                    <h4>Success Response (200) - MTN MoMo Payment:</h4>
                     <pre><code>{
   "id": 8,
   "order": {
     "id": 12,
     "order_number": "HGA-A1B2C3D4",
-    "status": "paid",
-    "total_amount": "1515.00"
+    "total_amount": "52000.00",
+    "currency": "RWF",
+    "status": "paid"
   },
-  "user": {...},
-  "payment_method": "card",
-  "amount": "1515.00",
+  "user": {
+    "id": 8,
+    "username": "buyer1",
+    "email": "buyer@example.com"
+  },
+  "payment_method": "momo",
+  "amount": "52000.00",
+  "phone": "250788123456",
   "transaction_id": "TXN-ABC123DEF456",
   "provider_response": {
-    "gateway": "stripe",
-    "charge_id": "ch_3MmlLr..."
+    "financialTransactionId": "1234567890",
+    "externalId": "TXN-ABC123DEF456",
+    "amount": "52000",
+    "currency": "RWF",
+    "payer": {
+      "partyId": "250788123456",
+      "partyIdType": "MSISDN"
+    },
+    "status": "SUCCESSFUL",
+    "request_date": "2024-12-10T14:35:05Z",
+    "completion_date": "2024-12-10T14:36:30Z"
   },
   "status": "successful",
-  "created_at": "2024-11-26T10:35:00Z",
-  "updated_at": "2024-11-26T10:36:00Z",
+  "created_at": "2024-12-10T14:35:00Z",
+  "updated_at": "2024-12-10T14:36:30Z",
   "logs": [
     {
       "id": 1,
       "message": "Payment initiated for order HGA-A1B2C3D4",
-      "timestamp": "2024-11-26T10:35:00Z"
+      "timestamp": "2024-12-10T14:35:00Z"
     },
     {
       "id": 2,
-      "message": "Webhook received: status changed to successful",
-      "timestamp": "2024-11-26T10:36:00Z"
+      "message": "MTN MoMo payment request sent to 250788123456",
+      "timestamp": "2024-12-10T14:35:05Z"
     },
     {
       "id": 3,
+      "message": "Payment successful via MTN MoMo",
+      "timestamp": "2024-12-10T14:36:30Z"
+    },
+    {
+      "id": 4,
       "message": "Order HGA-A1B2C3D4 marked as paid",
-      "timestamp": "2024-11-26T10:36:00Z"
+      "timestamp": "2024-12-10T14:36:30Z"
     }
   ]
 }</code></pre>
+                </div>
 
-                    <h4>How It Works:</h4>
+                <!-- Complete MTN MoMo Testing Flow -->
+                <div class="info-box">
+                    <h4>📱 MTN MoMo Testing Flow:</h4>
                     <ol>
-                        <li>User views payment details</li>
-                        <li>Shows complete transaction history</li>
-                        <li>Displays all log entries for transparency</li>
-                        <li>Used for payment verification and support</li>
+                        <li><strong>Create Order:</strong> <code>POST /api/orders/</code></li>
+                        <li><strong>Initiate Payment:</strong> <code>POST /api/payments/initiate/{order_id}/</code> with phone number</li>
+                        <li><strong>Poll Status:</strong> <code>GET /api/payments/check/{payment_id}/</code> every 10-15 seconds</li>
+                        <li><strong>Verify:</strong> Check order status changed to "paid" and artwork to "sold"</li>
                     </ol>
+                    <p><strong>Sandbox Mode:</strong> Payments auto-approve after 30-60 seconds<br>
+                    <strong>Production Mode:</strong> Buyer receives USSD prompt to approve payment</p>
                 </div>
             </div>
 
@@ -1696,29 +1799,32 @@ python manage.py migrate</pre>
 5. Admin approves (status: approved) → Visible in marketplace
 6. Buyer purchases → Artwork status: sold</pre>
 
-                <h3>Buyer Workflow</h3>
+                <h3>Buyer Workflow (with MTN MoMo)</h3>
                 <pre>1. Register (role: buyer) → Auto-create BuyerProfile
-2. Update buyer profile (shipping address)
+2. Update buyer profile (shipping address, phone)
 3. Browse approved artworks
 4. Add to cart
 5. Create order (status: pending_payment)
-6. Initiate payment
-7. Payment gateway processes
-8. Webhook confirms payment
-9. Order status: paid, Artwork status: sold
-10. Admin ships (status: shipped)
-11. Order delivered (status: delivered)</pre>
+6. Initiate MTN MoMo payment
+7. Receive USSD prompt on phone
+8. Approve payment on phone
+9. Payment webhook confirms → Order status: paid
+10. Artwork status: sold
+11. Admin ships (status: shipped)
+12. Order delivered (status: delivered)</pre>
 
-                <h3>Payment Flow</h3>
+                <h3>MTN MoMo Payment Flow</h3>
                 <pre>1. Buyer creates order
 2. POST /api/payments/initiate/&lt;order_id&gt;/
-   → Creates PaymentTransaction (status: pending)
-3. Frontend redirects to payment gateway
-4. Gateway processes payment
-5. Gateway calls POST /api/payments/webhook/
+   → Validates phone (2507xxxxxxx)
+   → Calls MTN MoMo API
+   → Sends USSD prompt to buyer's phone
+3. Buyer approves payment via USSD
+4. MTN API calls POST /api/payments/momo-webhook/
    → Updates payment status
    → If successful: Order → paid, Artwork → sold
-6. Frontend displays confirmation</pre>
+5. Frontend polls GET /api/payments/check/&lt;payment_id&gt;/
+   → Displays payment confirmation</pre>
 
                 <h3>Admin Approval Workflow</h3>
                 <pre>1. Artist submits artwork (status: submitted)
@@ -1738,22 +1844,22 @@ python manage.py migrate</pre>
             <div class="section">
                 <h2>🔗 Integration Notes</h2>
 
-                <h3>Frontend Integration</h3>
+                <h3>Frontend Integration for MTN MoMo</h3>
                 <ol>
-                    <li>Store JWT tokens in localStorage or secure cookie</li>
-                    <li>Include <code>Authorization: Bearer &lt;token&gt;</code> in all authenticated requests</li>
-                    <li>Handle token refresh on 401 errors</li>
-                    <li>Display errors from validation responses</li>
-                    <li>Implement pagination for list views</li>
-                    <li>Use status values to control UI state</li>
+                    <li><strong>Phone Validation:</strong> Validate format: 2507xxxxxxx (no +, no spaces)</li>
+                    <li><strong>Payment Initiation:</strong> Call initiate endpoint with phone number</li>
+                    <li><strong>Status Polling:</strong> Implement polling every 10-15 seconds using check endpoint</li>
+                    <li><strong>User Feedback:</strong> Show "Approving on phone..." message during polling</li>
+                    <li><strong>Error Handling:</strong> Handle phone validation errors and payment failures</li>
+                    <li><strong>Success Flow:</strong> Redirect to order confirmation page on successful payment</li>
                 </ol>
 
                 <h3>Payment Gateway Integration</h3>
                 <ol>
-                    <li>Use <code>transaction_id</code> as reference</li>
-                    <li>Configure webhook URL: <code>https://yourdomain.com/api/payments/webhook/</code></li>
-                    <li>Send payment confirmation with transaction_id</li>
-                    <li>Include provider-specific data in <code>provider_response</code></li>
+                    <li><strong>MTN MoMo:</strong> Use <code>transaction_id</code> as reference</li>
+                    <li><strong>Webhook URL:</strong> Configure <code>https://yourdomain.com/api/payments/momo-webhook/</code></li>
+                    <li><strong>Signature Verification:</strong> Production should verify webhook signatures</li>
+                    <li><strong>Phone Format:</strong> Always use Rwandan format: 2507xxxxxxx</li>
                 </ol>
 
                 <h3>Media Files</h3>
@@ -1771,7 +1877,33 @@ python manage.py migrate</pre>
                 <pre>python manage.py test</pre>
                 
                 <div class="info-box">
-                    <strong>Testing Resources:</strong> See <code>QUICKSTART.md</code> and <code>API_SAMPLES.md</code> for complete testing examples and sample requests.
+                    <h4>MTN MoMo Testing Instructions:</h4>
+                    <ol>
+                        <li><strong>Set sandbox mode:</strong> <code>MTN_MOMO_MODE=sandbox</code> in environment</li>
+                        <li><strong>Use test credentials:</strong> From MTN Developer Portal</li>
+                        <li><strong>Test phone:</strong> Any 2507xxxxxxx number works in sandbox</li>
+                        <li><strong>Auto-approval:</strong> Payments auto-approved after 30-60 seconds</li>
+                        <li><strong>Polling required:</strong> Must call check endpoint to update status</li>
+                    </ol>
+                    <p><strong>Sample Test Flow:</strong></p>
+                    <pre># 1. Login as buyer
+POST /api/auth/login/
+{"username": "testbuyer", "password": "password"}
+
+# 2. Create order
+POST /api/orders/
+{"items": [{"artwork_id": 1, "quantity": 1}], "shipping_address": "Kigali"}
+
+# 3. Initiate MoMo payment
+POST /api/payments/initiate/1/
+{"payment_method": "momo", "phone": "250788123456"}
+
+# 4. Poll for status (every 10 seconds)
+GET /api/payments/check/1/
+
+# 5. Verify results
+GET /api/orders/1/   # Should show status: "paid"
+GET /api/artworks/1/ # Should show is_available: false, status: "sold"</pre>
                 </div>
             </div>
 
@@ -1787,9 +1919,10 @@ python manage.py migrate</pre>
                         <li>Set up environment variables for secrets</li>
                         <li>Configure cloud storage for media files (AWS S3, Cloudinary)</li>
                         <li>Implement payment gateway signature verification</li>
-                        <li>Set up HTTPS</li>
+                        <li>Set up HTTPS for webhooks</li>
                         <li>Configure production CORS origins</li>
                         <li>Set up logging and monitoring</li>
+                        <li><strong>For MTN MoMo:</strong> Switch to production API credentials</li>
                     </ul>
                 </div>
             </div>
@@ -1809,4 +1942,9 @@ python manage.py migrate</pre>
                 API Base URL: <code>https://hangart.pythonanywhere.com/api/</code>
             </p>
             <p style="margin-top: 0.5rem; opacity: 0.8;">
-                API Version:
+                <strong>Payment Status:</strong> MTN MoMo Rwanda ✓ | Card Payments (in development) | PayPal (in development) | Bank Transfer (in development)
+            </p>
+        </footer>
+    </div>
+</body>
+</html>

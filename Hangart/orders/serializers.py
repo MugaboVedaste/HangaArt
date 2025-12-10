@@ -35,39 +35,50 @@ class OrderSerializer(serializers.ModelSerializer):
         model = Order
         fields = [
             'id', 'buyer', 'order_number', 'payment_method', 'payment_reference',
-            'status', 'subtotal', 'shipping_fee', 'total_amount',
+            'status', 'subtotal', 'shipping_fee', 'commission', 'total_amount',
             'shipping_address', 'tracking_number', 'admin_notes',
             'created_at', 'updated_at', 'items'
         ]
         read_only_fields = [
             'order_number', 'payment_reference', 'subtotal', 'total_amount',
-            'tracking_number', 'admin_notes', 'created_at', 'updated_at'
+            'shipping_fee', 'commission', 'tracking_number', 'admin_notes', 'created_at', 'updated_at'
         ]
     
     def create(self, validated_data):
         from artworks.models import Artwork
+        from decimal import Decimal
         
         items_data = validated_data.pop('items')
-        shipping_fee = validated_data.pop('shipping_fee', 0)
         shipping_address = validated_data.pop('shipping_address', '')
+        
+        # Fixed shipping fee: $10
+        FIXED_SHIPPING_FEE = Decimal('10.00')
+        
+        # Commission rate: 10%
+        COMMISSION_RATE = Decimal('0.10')
         
         # Generate unique order number
         order_number = f"HGA-{uuid.uuid4().hex[:8].upper()}"
         
-        # Calculate totals
-        subtotal = 0
+        # Calculate subtotal (artworks total)
+        subtotal = Decimal('0.00')
         for item_data in items_data:
             artwork = Artwork.objects.get(id=item_data['artwork_id'])
             subtotal += artwork.price * item_data['quantity']
         
-        total_amount = subtotal + shipping_fee
+        # Calculate commission (10% of subtotal - deducted from artist earnings)
+        commission = subtotal * COMMISSION_RATE
+        
+        # Calculate total: subtotal + shipping (commission is NOT added to buyer's price)
+        total_amount = subtotal + FIXED_SHIPPING_FEE
         
         # Create order
         order = Order.objects.create(
             buyer=self.context['request'].user,
             order_number=order_number,
             subtotal=subtotal,
-            shipping_fee=shipping_fee,
+            shipping_fee=FIXED_SHIPPING_FEE,
+            commission=commission,  # Stored for record keeping (artist payout calculation)
             total_amount=total_amount,
             shipping_address=shipping_address,
             status='pending_payment'

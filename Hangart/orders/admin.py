@@ -28,7 +28,7 @@ class OrderAdmin(admin.ModelAdmin):
     list_display = ['order_number', 'buyer', 'status', 'total_amount', 'payment_method', 'created_at']
     list_filter = ['status', 'payment_method', 'created_at']
     search_fields = ['order_number', 'buyer__username', 'buyer__email']
-    readonly_fields = ['order_number', 'buyer', 'subtotal', 'total_amount', 'created_at', 'updated_at']
+    readonly_fields = ['order_number', 'buyer', 'subtotal', 'commission', 'total_amount', 'created_at', 'updated_at']
     inlines = [OrderItemInline]
     
     fieldsets = (
@@ -39,7 +39,7 @@ class OrderAdmin(admin.ModelAdmin):
             'fields': ('payment_method', 'payment_reference')
         }),
         ('Amounts', {
-            'fields': ('subtotal', 'shipping_fee', 'total_amount')
+            'fields': ('subtotal', 'shipping_fee', 'commission', 'total_amount')
         }),
         ('Shipping', {
             'fields': ('shipping_address', 'tracking_number')

@@ -1,8 +1,10 @@
 from rest_framework import viewsets, status, permissions
-from rest_framework.decorators import action, api_view, permission_classes
+from rest_framework.decorators import action, api_view, permission_classes, authentication_classes
 from rest_framework.response import Response
 from rest_framework.views import APIView
 from django_filters.rest_framework import DjangoFilterBackend
+from django.conf import settings
+from rest_framework_simplejwt.authentication import JWTAuthentication
 
 from .models import PaymentTransaction, PaymentLog
 from .serializers import (
@@ -11,8 +13,13 @@ from .serializers import (
     PaymentWebhookSerializer
 )
 from .permissions import IsPaymentOwnerOrAdmin, IsBuyer, IsAdminUser
+from .services import MoMoPaymentService, FlutterwavePaymentService
+from .mock_payment_service import MockMoMoPaymentService
 from orders.models import Order
 import uuid
+
+# Use mock service if MoMo credentials not configured
+USE_MOCK_PAYMENT = not getattr(settings, 'MOMO_API_USER', '') or not getattr(settings, 'MOMO_API_KEY', '')
 
 
 class PaymentTransactionViewSet(viewsets.ModelViewSet):
@@ -164,11 +171,14 @@ class PaymentWebhookView(APIView):
 
 
 @api_view(['POST'])
+@authentication_classes([JWTAuthentication])
 @permission_classes([permissions.IsAuthenticated])
 def initiate_payment(request, order_id):
     """
     Initiate payment for an order.
     POST /api/payments/initiate/<order_id>/
+    
+    Body: {"payment_method": "momo", "phone": "250788123456"}
     """
     try:
         order = Order.objects.get(id=order_id, buyer=request.user)
@@ -193,6 +203,13 @@ def initiate_payment(request, order_id):
             status=status.HTTP_400_BAD_REQUEST
         )
     
+    # Get phone number from request (optional - will use profile phone if not provided)
+    phone_number = request.data.get('phone')
+    
+    # Update order payment method
+    order.payment_method = payment_method
+    order.save()
+    
     # Create payment transaction
     transaction_id = f"TXN-{uuid.uuid4().hex[:12].upper()}"
     payment = PaymentTransaction.objects.create(
@@ -209,5 +226,103 @@ def initiate_payment(request, order_id):
         message=f"Payment initiated for order {order.order_number}"
     )
     
+    # Process payment based on method
+    if payment_method == 'momo':
+        # Use mock service if MoMo not configured, otherwise use real service
+        if USE_MOCK_PAYMENT:
+            momo_service = MockMoMoPaymentService()
+            payment.provider_response = {'mode': 'MOCK'}
+            payment.save()
+        else:
+            momo_service = MoMoPaymentService()
+        
+        result = momo_service.request_to_pay(payment, phone_number=phone_number)
+        
+        if result.get('success'):
+            serializer = PaymentTransactionSerializer(payment)
+            response_data = {
+                'success': True,
+                'payment': serializer.data,
+                'message': result.get('message'),
+                'phone': result.get('phone'),
+                'reference': result.get('reference'),
+                'instructions': 'Please check your phone and approve the payment request.'
+            }
+            
+            # Add mock warning if in mock mode
+            if USE_MOCK_PAYMENT or result.get('mock'):
+                response_data['mode'] = 'MOCK'
+                response_data['warning'] = '⚠️  MOCK MODE: Payment will auto-approve in 5 seconds. Configure MOMO_API_USER and MOMO_API_KEY for real payments.'
+            
+            return Response(response_data, status=status.HTTP_201_CREATED)
+        else:
+            payment.status = 'failed'
+            payment.save()
+            return Response({
+                'success': False,
+                'error': 'Payment initiation failed',
+                'details': result.get('error')
+            }, status=status.HTTP_400_BAD_REQUEST)
+    
+    elif payment_method in ['card', 'paypal', 'bank']:
+        # Future implementation for Flutterwave
+        return Response({
+            'error': 'This payment method is not yet configured. Please use Mobile Money (momo).'
+        }, status=status.HTTP_400_BAD_REQUEST)
+    
+    else:
+        return Response({
+            'error': f'Invalid payment method: {payment_method}. Use "momo" for Mobile Money.'
+        }, status=status.HTTP_400_BAD_REQUEST)
+
+
+@api_view(['GET'])
+@authentication_classes([JWTAuthentication])
+@permission_classes([permissions.IsAuthenticated])
+def check_payment_status(request, payment_id):
+    """
+    Check payment status (poll this endpoint for MoMo payments)
+    GET /api/payments/check/<payment_id>/
+    """
+    try:
+        payment = PaymentTransaction.objects.get(id=payment_id)
+    except PaymentTransaction.DoesNotExist:
+        return Response({'error': 'Payment not found'}, status=status.HTTP_404_NOT_FOUND)
+    
+    # Check permission
+    if payment.user != request.user and request.user.role != 'admin':
+        return Response({'error': 'Unauthorized'}, status=status.HTTP_403_FORBIDDEN)
+    
+    # If payment already completed, return current status
+    if payment.status in ['successful', 'failed', 'cancelled', 'refunded']:
+        serializer = PaymentTransactionSerializer(payment)
+        return Response({
+            'status': payment.status,
+            'payment': serializer.data
+        })
+    
+    # Check with MoMo if payment is pending
+    if payment.payment_method == 'momo' and payment.status == 'pending':
+        # Use mock service if MoMo not configured
+        if USE_MOCK_PAYMENT or payment.provider_response.get('mock'):
+            momo_service = MockMoMoPaymentService()
+        else:
+            momo_service = MoMoPaymentService()
+        
+        result = momo_service.update_payment_from_status_check(payment)
+        
+        # Refresh payment from DB
+        payment.refresh_from_db()
+        serializer = PaymentTransactionSerializer(payment)
+        
+        return Response({
+            'status': payment.status,
+            'payment': serializer.data,
+            'checked_at': result
+        })
+    
     serializer = PaymentTransactionSerializer(payment)
-    return Response(serializer.data, status=status.HTTP_201_CREATED)
+    return Response({
+        'status': payment.status,
+        'payment': serializer.data
+    })
