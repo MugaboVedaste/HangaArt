@@ -18,8 +18,10 @@ from .mock_payment_service import MockMoMoPaymentService
 from orders.models import Order
 import uuid
 
-# Use mock service if MoMo credentials not configured
-USE_MOCK_PAYMENT = not getattr(settings, 'MOMO_API_USER', '') or not getattr(settings, 'MOMO_API_KEY', '')
+# Use mock service if explicitly enabled (for PythonAnywhere free tier) or if credentials not configured
+USE_MOCK_PAYMENT = getattr(settings, 'USE_MOCK_PAYMENTS', False) or \
+                   not getattr(settings, 'MOMO_API_USER', '') or \
+                   not getattr(settings, 'MOMO_API_KEY', '')
 
 
 class PaymentTransactionViewSet(viewsets.ModelViewSet):

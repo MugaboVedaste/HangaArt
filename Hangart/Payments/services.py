@@ -98,6 +98,59 @@ class MoMoPaymentService:
             payment: PaymentTransaction object
             phone_number: Optional phone number. If not provided, uses buyer's profile phone
         """
+        # TEMPORARY FIX: Auto-approve payments if we can't reach MTN API (PythonAnywhere proxy issue)
+        # This will be replaced with real MTN integration when moving to a proper host
+        AUTO_APPROVE_PAYMENTS = getattr(settings, 'AUTO_APPROVE_PAYMENTS', False)
+        
+        if AUTO_APPROVE_PAYMENTS:
+            # Get phone number for logging
+            if phone_number:
+                phone = phone_number
+            else:
+                try:
+                    phone = payment.order.buyer.buyerprofile.phone
+                except:
+                    phone = 'No phone provided'
+            
+            # Auto-approve the payment immediately
+            reference_id = str(uuid.uuid4())
+            payment.transaction_id = reference_id
+            payment.status = 'successful'
+            payment.provider_response = {
+                'momo_reference': reference_id,
+                'phone': phone,
+                'status': 'SUCCESSFUL',
+                'note': 'Auto-approved (temporary fix for hosting limitations)'
+            }
+            payment.save()
+            
+            # Update order to paid
+            order = payment.order
+            order.status = 'paid'
+            order.payment_reference = reference_id
+            order.save()
+            
+            # Mark artworks as sold
+            for item in order.items.all():
+                artwork = item.artwork
+                artwork.is_available = False
+                artwork.status = 'sold'
+                artwork.save()
+            
+            PaymentLog.objects.create(
+                payment=payment,
+                message=f"Payment auto-approved for {phone}. Reference: {reference_id}"
+            )
+            
+            return {
+                'success': True,
+                'reference': reference_id,
+                'phone': phone,
+                'message': 'Payment approved successfully.',
+                'status': 'successful'
+            }
+        
+        # Normal MTN API flow (when not auto-approving)
         if not self.api_user or not self.api_key:
             return {
                 'success': False,

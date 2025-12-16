@@ -84,3 +84,50 @@ class OrderItem(models.Model):
 
     def __str__(self):
         return f"{self.artwork.title} (Order {self.order.order_number})"
+
+
+class RefundRequest(models.Model):
+    """Refund requests for paid orders"""
+    
+    REFUND_STATUS = [
+        ('pending', 'Pending Review'),
+        ('approved', 'Approved'),
+        ('rejected', 'Rejected'),
+        ('processed', 'Processed'),
+    ]
+    
+    REFUND_REASONS = [
+        ('damaged', 'Item Damaged'),
+        ('wrong_item', 'Wrong Item Received'),
+        ('not_as_described', 'Not As Described'),
+        ('changed_mind', 'Changed Mind'),
+        ('other', 'Other'),
+    ]
+    
+    order = models.OneToOneField(Order, on_delete=models.CASCADE, related_name='refund_request')
+    buyer = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='refund_requests')
+    
+    reason = models.CharField(max_length=50, choices=REFUND_REASONS)
+    description = models.TextField(help_text="Detailed explanation for refund request")
+    
+    status = models.CharField(max_length=20, choices=REFUND_STATUS, default='pending')
+    admin_response = models.TextField(blank=True, null=True, help_text="Admin's response to the request")
+    reviewed_by = models.ForeignKey(
+        settings.AUTH_USER_MODEL, 
+        on_delete=models.SET_NULL, 
+        null=True, 
+        blank=True, 
+        related_name='reviewed_refunds'
+    )
+    
+    refund_amount = models.DecimalField(max_digits=12, decimal_places=2)
+    
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+    reviewed_at = models.DateTimeField(null=True, blank=True)
+    
+    class Meta:
+        ordering = ['-created_at']
+    
+    def __str__(self):
+        return f"Refund Request for Order {self.order.order_number} - {self.status}"

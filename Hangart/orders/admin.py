@@ -1,5 +1,5 @@
 from django.contrib import admin
-from .models import Cart, CartItem, Order, OrderItem
+from .models import Cart, CartItem, Order, OrderItem, RefundRequest
 
 
 class CartItemInline(admin.TabularInline):
@@ -25,7 +25,7 @@ class OrderItemInline(admin.TabularInline):
 
 @admin.register(Order)
 class OrderAdmin(admin.ModelAdmin):
-    list_display = ['order_number', 'buyer', 'status', 'total_amount', 'payment_method', 'created_at']
+    list_display = ['order_number', 'buyer', 'status', 'total_amount',"commission", 'payment_method', 'created_at']
     list_filter = ['status', 'payment_method', 'created_at']
     search_fields = ['order_number', 'buyer__username', 'buyer__email']
     readonly_fields = ['order_number', 'buyer', 'subtotal', 'commission', 'total_amount', 'created_at', 'updated_at']
@@ -71,3 +71,67 @@ class OrderItemAdmin(admin.ModelAdmin):
     list_filter = ['order__status']
     search_fields = ['order__order_number', 'artwork__title']
     readonly_fields = ['order', 'artwork', 'price', 'quantity']
+
+
+@admin.register(RefundRequest)
+class RefundRequestAdmin(admin.ModelAdmin):
+    list_display = ['id', 'order', 'buyer', 'reason', 'status', 'refund_amount', 'created_at']
+    list_filter = ['status', 'reason', 'created_at']
+    search_fields = ['order__order_number', 'buyer__username', 'buyer__email']
+    readonly_fields = ['order', 'buyer', 'refund_amount', 'created_at', 'updated_at', 'reviewed_at']
+    
+    fieldsets = (
+        ('Request Information', {
+            'fields': ('order', 'buyer', 'reason', 'description')
+        }),
+        ('Review', {
+            'fields': ('status', 'admin_response', 'reviewed_by', 'reviewed_at')
+        }),
+        ('Financial', {
+            'fields': ('refund_amount',)
+        }),
+        ('Timestamps', {
+            'fields': ('created_at', 'updated_at')
+        }),
+    )
+    
+    actions = ['approve_refund', 'reject_refund']
+    
+    def approve_refund(self, request, queryset):
+        from django.utils import timezone
+        pending = queryset.filter(status='pending')
+        count = pending.count()
+        
+        for refund in pending:
+            refund.status = 'approved'
+            refund.reviewed_by = request.user
+            refund.reviewed_at = timezone.now()
+            refund.save()
+            
+            # Update order status
+            refund.order.status = 'refunded'
+            refund.order.save()
+            
+            # Make artworks available again
+            for item in refund.order.items.all():
+                artwork = item.artwork
+                artwork.is_available = True
+                artwork.status = 'approved'
+                artwork.save()
+        
+        self.message_user(request, f"{count} refund request(s) approved.")
+    approve_refund.short_description = "Approve selected refund requests"
+    
+    def reject_refund(self, request, queryset):
+        from django.utils import timezone
+        pending = queryset.filter(status='pending')
+        count = pending.count()
+        
+        for refund in pending:
+            refund.status = 'rejected'
+            refund.reviewed_by = request.user
+            refund.reviewed_at = timezone.now()
+            refund.save()
+        
+        self.message_user(request, f"{count} refund request(s) rejected.")
+    reject_refund.short_description = "Reject selected refund requests"
