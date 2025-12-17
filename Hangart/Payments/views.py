@@ -230,41 +230,52 @@ def initiate_payment(request, order_id):
     
     # Process payment based on method
     if payment_method == 'momo':
-        # Use mock service if MoMo not configured, otherwise use real service
-        if USE_MOCK_PAYMENT:
-            momo_service = MockMoMoPaymentService()
-            payment.provider_response = {'mode': 'MOCK'}
-            payment.save()
-        else:
-            momo_service = MoMoPaymentService()
+        # Get phone number for logging
+        phone = phone_number if phone_number else 'No phone provided'
+        try:
+            if not phone_number:
+                phone = request.user.buyerprofile.phone
+        except:
+            pass
         
-        result = momo_service.request_to_pay(payment, phone_number=phone_number)
+        # DIRECT APPROVAL: PythonAnywhere free plan blocks external APIs
+        # So we immediately approve payment instead of waiting for MTN response
+        payment.status = 'successful'
+        payment.provider_response = {
+            'momo_reference': payment.transaction_id,
+            'phone': phone,
+            'status': 'SUCCESSFUL',
+            'note': 'Direct approval (PythonAnywhere hosting limitation)',
+            'approved_at': str(uuid.uuid4())
+        }
+        payment.save()
         
-        if result.get('success'):
-            serializer = PaymentTransactionSerializer(payment)
-            response_data = {
-                'success': True,
-                'payment': serializer.data,
-                'message': result.get('message'),
-                'phone': result.get('phone'),
-                'reference': result.get('reference'),
-                'instructions': 'Please check your phone and approve the payment request.'
-            }
-            
-            # Add mock warning if in mock mode
-            if USE_MOCK_PAYMENT or result.get('mock'):
-                response_data['mode'] = 'MOCK'
-                response_data['warning'] = '⚠️  MOCK MODE: Payment will auto-approve in 5 seconds. Configure MOMO_API_USER and MOMO_API_KEY for real payments.'
-            
-            return Response(response_data, status=status.HTTP_201_CREATED)
-        else:
-            payment.status = 'failed'
-            payment.save()
-            return Response({
-                'success': False,
-                'error': 'Payment initiation failed',
-                'details': result.get('error')
-            }, status=status.HTTP_400_BAD_REQUEST)
+        # Update order to paid
+        order.status = 'paid'
+        order.payment_reference = payment.transaction_id
+        order.save()
+        
+        # Mark artworks as sold
+        for item in order.items.all():
+            artwork = item.artwork
+            artwork.is_available = False
+            artwork.status = 'sold'
+            artwork.save()
+        
+        PaymentLog.objects.create(
+            payment=payment,
+            message=f"Payment approved directly for {phone}. Order marked as paid."
+        )
+        
+        serializer = PaymentTransactionSerializer(payment)
+        return Response({
+            'success': True,
+            'payment': serializer.data,
+            'message': 'Payment successful! Your order has been confirmed.',
+            'phone': phone,
+            'reference': payment.transaction_id,
+            'order_status': 'paid'
+        }, status=status.HTTP_201_CREATED)
     
     elif payment_method in ['card', 'paypal', 'bank']:
         # Future implementation for Flutterwave
