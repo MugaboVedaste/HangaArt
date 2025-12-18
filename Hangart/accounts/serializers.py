@@ -78,11 +78,8 @@ class UserRegistrationSerializer(serializers.ModelSerializer):
         user.set_password(password)
         user.save()
         
-        # Create corresponding profile
-        if user.role == 'artist':
-            ArtistProfile.objects.create(user=user)
-        elif user.role == 'buyer':
-            BuyerProfile.objects.create(user=user)
+        # Profile creation is handled by post_save signal in models.py
+        # No need to manually create profiles here
         
         return user
 
